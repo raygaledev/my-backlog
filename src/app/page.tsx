@@ -20,6 +20,13 @@ interface Game {
   name: string;
 }
 
+interface ShortGame {
+  app_id: number;
+  name: string;
+  header_image: string | null;
+  main_story_hours: number;
+}
+
 function HomeContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -28,6 +35,8 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
+  const [shortGames, setShortGames] = useState<ShortGame[]>([]);
+  const [weekendGames, setWeekendGames] = useState<ShortGame[]>([]);
   const syncingRef = useRef(false);
 
   const searchParams = useSearchParams();
@@ -43,7 +52,6 @@ function HomeContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appId: games[i].app_id }),
         });
-        await new Promise(resolve => setTimeout(resolve, 200));
       } catch (err) {
         console.error(`Failed to sync ${games[i].name}:`, err);
       }
@@ -104,6 +112,33 @@ function HomeContent() {
             setIsSyncing(false);
             syncingRef.current = false;
           }
+
+          // Fetch short games (under 5 hours, single-player only)
+          const { data: shortGamesData } = await supabase
+            .from('games')
+            .select('app_id, name, header_image, main_story_hours')
+            .eq('user_id', user.id)
+            .not('main_story_hours', 'is', null)
+            .lte('main_story_hours', 5)
+            .contains('categories', ['Single-player'])
+            .order('main_story_hours', { ascending: true })
+            .limit(10);
+
+          setShortGames(shortGamesData || []);
+
+          // Fetch weekend games (5-12 hours, single-player only)
+          const { data: weekendGamesData } = await supabase
+            .from('games')
+            .select('app_id, name, header_image, main_story_hours')
+            .eq('user_id', user.id)
+            .not('main_story_hours', 'is', null)
+            .gt('main_story_hours', 5)
+            .lte('main_story_hours', 12)
+            .contains('categories', ['Single-player'])
+            .order('main_story_hours', { ascending: true })
+            .limit(10);
+
+          setWeekendGames(weekendGamesData || []);
           return;
         }
       }
@@ -212,22 +247,94 @@ function HomeContent() {
             )}
           </div>
 
-          <div className='mt-24 grid md:grid-cols-3 gap-6 text-center'>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>1</div>
-              <p className='text-zinc-400'>Connect Steam</p>
+          {isSteamConnected && (shortGames.length > 0 || weekendGames.length > 0) ? (
+            <div className='mt-24 space-y-12'>
+              {shortGames.length > 0 && (
+                <div>
+                  <h2 className='text-2xl font-bold text-zinc-100 mb-6'>
+                    Games Under 5 Hours
+                  </h2>
+                  <div className='flex gap-4 overflow-x-auto pb-4 -mx-6 px-6' style={{ scrollbarWidth: 'none' }}>
+                    {shortGames.map((game) => (
+                      <div
+                        key={game.app_id}
+                        className='flex-shrink-0 w-64 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-colors'
+                      >
+                        {game.header_image ? (
+                          <img
+                            src={game.header_image}
+                            alt={game.name}
+                            className='w-full h-32 object-cover'
+                          />
+                        ) : (
+                          <div className='w-full h-32 bg-zinc-800' />
+                        )}
+                        <div className='p-4'>
+                          <h3 className='text-zinc-100 font-medium truncate'>
+                            {game.name}
+                          </h3>
+                          <p className='text-zinc-500 text-sm mt-1'>
+                            {game.main_story_hours}h to complete
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {weekendGames.length > 0 && (
+                <div>
+                  <h2 className='text-2xl font-bold text-zinc-100 mb-6'>
+                    Games You Can Finish This Weekend
+                  </h2>
+                  <div className='flex gap-4 overflow-x-auto pb-4 -mx-6 px-6' style={{ scrollbarWidth: 'none' }}>
+                    {weekendGames.map((game) => (
+                      <div
+                        key={game.app_id}
+                        className='flex-shrink-0 w-64 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-colors'
+                      >
+                        {game.header_image ? (
+                          <img
+                            src={game.header_image}
+                            alt={game.name}
+                            className='w-full h-32 object-cover'
+                          />
+                        ) : (
+                          <div className='w-full h-32 bg-zinc-800' />
+                        )}
+                        <div className='p-4'>
+                          <h3 className='text-zinc-100 font-medium truncate'>
+                            {game.name}
+                          </h3>
+                          <p className='text-zinc-500 text-sm mt-1'>
+                            {game.main_story_hours}h to complete
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>2</div>
-              <p className='text-zinc-400'>
-                Answer a couple of high-impact questions
-              </p>
+          ) : !isSteamConnected ? (
+            <div className='mt-24 grid md:grid-cols-3 gap-6 text-center'>
+              <div className='p-6'>
+                <div className='text-3xl font-bold text-zinc-100 mb-2'>1</div>
+                <p className='text-zinc-400'>Connect Steam</p>
+              </div>
+              <div className='p-6'>
+                <div className='text-3xl font-bold text-zinc-100 mb-2'>2</div>
+                <p className='text-zinc-400'>
+                  Answer a couple of high-impact questions
+                </p>
+              </div>
+              <div className='p-6'>
+                <div className='text-3xl font-bold text-zinc-100 mb-2'>3</div>
+                <p className='text-zinc-400'>Get your pick</p>
+              </div>
             </div>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>3</div>
-              <p className='text-zinc-400'>Get your pick</p>
-            </div>
-          </div>
+          ) : null}
         </section>
 
         <footer className='py-6 border-t border-zinc-800'>

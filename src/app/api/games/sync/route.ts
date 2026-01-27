@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getGameDetails, extractGameMetadata } from "@/lib/steam/store-api";
+import { getMainStoryHours } from "@/lib/hltb/api";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -19,6 +20,10 @@ export async function POST(request: NextRequest) {
   // Fetch game details from Steam Store API
   const details = await getGameDetails(appId);
   const metadata = details ? extractGameMetadata(details) : null;
+  const gameName = details?.data?.name;
+
+  // Fetch game length from HLTB
+  const mainStoryHours = gameName ? await getMainStoryHours(gameName) : null;
 
   if (metadata) {
     // Update game with metadata
@@ -31,17 +36,18 @@ export async function POST(request: NextRequest) {
         release_date: metadata.release_date,
         metacritic: metadata.metacritic,
         header_image: metadata.header_image,
+        main_story_hours: mainStoryHours,
         metadata_synced: true,
       })
       .eq("user_id", user.id)
       .eq("app_id", appId);
 
-    return NextResponse.json({ success: true, metadata });
+    return NextResponse.json({ success: true, metadata: { ...metadata, main_story_hours: mainStoryHours } });
   } else {
     // Mark as synced even if no data (game might be removed from store)
     await supabase
       .from("games")
-      .update({ metadata_synced: true })
+      .update({ metadata_synced: true, main_story_hours: mainStoryHours })
       .eq("user_id", user.id)
       .eq("app_id", appId);
 
