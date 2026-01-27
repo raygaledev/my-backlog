@@ -1,0 +1,125 @@
+import { extractSteamId } from '@/lib/steam/auth';
+import { extractGameMetadata, SteamGameDetails } from '@/lib/steam/store-api';
+
+describe('extractSteamId', () => {
+  it('should extract Steam ID from valid OpenID URL', () => {
+    const url = 'https://steamcommunity.com/openid/id/76561198012345678';
+    expect(extractSteamId(url)).toBe('76561198012345678');
+  });
+
+  it('should handle different Steam ID lengths', () => {
+    const url = 'https://steamcommunity.com/openid/id/123456789';
+    expect(extractSteamId(url)).toBe('123456789');
+  });
+
+  it('should return null for invalid URL format', () => {
+    expect(extractSteamId('https://example.com/id/12345')).toBeNull();
+    expect(extractSteamId('steamcommunity.com/openid/id/12345')).toBeNull();
+    expect(extractSteamId('')).toBeNull();
+  });
+
+  it('should return null for URL with non-numeric ID', () => {
+    expect(extractSteamId('https://steamcommunity.com/openid/id/abc')).toBeNull();
+  });
+
+  it('should return null for partial matches', () => {
+    expect(extractSteamId('https://steamcommunity.com/openid/')).toBeNull();
+    expect(extractSteamId('https://steamcommunity.com/openid/id/')).toBeNull();
+  });
+});
+
+describe('extractGameMetadata', () => {
+  it('should extract all metadata from complete response', () => {
+    const details: SteamGameDetails = {
+      success: true,
+      data: {
+        type: 'game',
+        name: 'Test Game',
+        steam_appid: 12345,
+        short_description: 'A test game description',
+        header_image: 'https://cdn.steam.com/image.jpg',
+        genres: [
+          { id: '1', description: 'Action' },
+          { id: '2', description: 'Adventure' },
+        ],
+        categories: [
+          { id: 1, description: 'Single-player' },
+          { id: 2, description: 'Multi-player' },
+        ],
+        release_date: { coming_soon: false, date: 'Jan 1, 2020' },
+        metacritic: { score: 85 },
+      },
+    };
+
+    const result = extractGameMetadata(details);
+
+    expect(result).toEqual({
+      genres: ['Action', 'Adventure'],
+      categories: ['Single-player', 'Multi-player'],
+      description: 'A test game description',
+      release_date: 'Jan 1, 2020',
+      metacritic: 85,
+      header_image: 'https://cdn.steam.com/image.jpg',
+    });
+  });
+
+  it('should return null when success is false', () => {
+    const details: SteamGameDetails = {
+      success: false,
+    };
+
+    expect(extractGameMetadata(details)).toBeNull();
+  });
+
+  it('should return null when data is missing', () => {
+    const details: SteamGameDetails = {
+      success: true,
+    };
+
+    expect(extractGameMetadata(details)).toBeNull();
+  });
+
+  it('should handle missing optional fields', () => {
+    const details: SteamGameDetails = {
+      success: true,
+      data: {
+        type: 'game',
+        name: 'Minimal Game',
+        steam_appid: 99999,
+        short_description: '',
+        header_image: '',
+      },
+    };
+
+    const result = extractGameMetadata(details);
+
+    expect(result).toEqual({
+      genres: [],
+      categories: [],
+      description: null,
+      release_date: null,
+      metacritic: null,
+      header_image: null,
+    });
+  });
+
+  it('should handle empty genres and categories arrays', () => {
+    const details: SteamGameDetails = {
+      success: true,
+      data: {
+        type: 'game',
+        name: 'No Genre Game',
+        steam_appid: 11111,
+        short_description: 'Description here',
+        header_image: 'https://image.url',
+        genres: [],
+        categories: [],
+      },
+    };
+
+    const result = extractGameMetadata(details);
+
+    expect(result?.genres).toEqual([]);
+    expect(result?.categories).toEqual([]);
+  });
+});

@@ -1,0 +1,82 @@
+"use client";
+
+import { useEffect, useCallback, ReactNode } from "react";
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  title?: string;
+}
+
+export function Modal({ isOpen, onClose, children, title }: ModalProps) {
+  const handleEscape = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, handleEscape]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+        <div
+          className="relative z-10 w-full max-w-md bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title ? "modal-title" : undefined}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-colors z-10"
+            aria-label="Close modal"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+          {title && (
+            <div className="p-6 pb-0">
+              <h2 id="modal-title" className="text-xl font-semibold text-zinc-100">
+                {title}
+              </h2>
+            </div>
+          )}
+          <div className="p-6">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
