@@ -499,20 +499,24 @@ function HomeContent() {
             )}
           </div>
 
-          <div className='mt-24 grid md:grid-cols-3 gap-6 text-center'>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>1</div>
-              <p className='text-zinc-400'>Connect Steam</p>
+          <div className='mt-32 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16'>
+            <div className='flex items-center gap-4'>
+              <span className='text-4xl font-light text-violet-400'>1</span>
+              <span className='text-zinc-400'>Connect Steam</span>
             </div>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>2</div>
-              <p className='text-zinc-400'>
-                Answer a couple of high-impact questions
-              </p>
+
+            <div className='hidden md:block w-12 h-px bg-zinc-800' />
+
+            <div className='flex items-center gap-4'>
+              <span className='text-4xl font-light text-violet-400'>2</span>
+              <span className='text-zinc-400'>Set your mood</span>
             </div>
-            <div className='p-6'>
-              <div className='text-3xl font-bold text-zinc-100 mb-2'>3</div>
-              <p className='text-zinc-400'>Get your pick</p>
+
+            <div className='hidden md:block w-12 h-px bg-zinc-800' />
+
+            <div className='flex items-center gap-4'>
+              <span className='text-4xl font-light text-violet-400'>3</span>
+              <span className='text-zinc-400'>Play</span>
             </div>
           </div>
         </section>
