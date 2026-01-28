@@ -3,10 +3,11 @@
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/Button';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { GameCarousel } from '@/components/GameCarousel';
+import { CurrentlyPlaying } from '@/components/CurrentlyPlaying';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -38,22 +39,9 @@ function HomeContent() {
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
   const [shortGames, setShortGames] = useState<ShortGame[]>([]);
   const [weekendGames, setWeekendGames] = useState<ShortGame[]>([]);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<ShortGame | null>(null);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
   const syncingRef = useRef(false);
-  const shortGamesRef = useRef<HTMLDivElement>(null);
-  const weekendGamesRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (
-    ref: React.RefObject<HTMLDivElement | null>,
-    direction: 'left' | 'right',
-  ) => {
-    if (ref.current) {
-      const scrollAmount = 280; // card width + gap
-      ref.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -73,6 +61,78 @@ function HomeContent() {
       }
     }
   }, []);
+
+  const handlePickGame = async (game: ShortGame) => {
+    setIsStatusLoading(true);
+    try {
+      await fetch('/api/games/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: game.app_id, status: 'playing' }),
+      });
+      setCurrentlyPlaying(game);
+      // Remove from carousels
+      setShortGames(prev => prev.filter(g => g.app_id !== game.app_id));
+      setWeekendGames(prev => prev.filter(g => g.app_id !== game.app_id));
+    } catch (err) {
+      console.error('Failed to pick game:', err);
+    }
+    setIsStatusLoading(false);
+  };
+
+  const handleFinishGame = async () => {
+    if (!currentlyPlaying) return;
+    setIsStatusLoading(true);
+    try {
+      await fetch('/api/games/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: currentlyPlaying.app_id, status: 'finished' }),
+      });
+      setCurrentlyPlaying(null);
+    } catch (err) {
+      console.error('Failed to finish game:', err);
+    }
+    setIsStatusLoading(false);
+  };
+
+  const handleDropGame = async () => {
+    if (!currentlyPlaying) return;
+    setIsStatusLoading(true);
+    try {
+      await fetch('/api/games/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: currentlyPlaying.app_id, status: 'dropped' }),
+      });
+      setCurrentlyPlaying(null);
+    } catch (err) {
+      console.error('Failed to drop game:', err);
+    }
+    setIsStatusLoading(false);
+  };
+
+  const handleCancelGame = async () => {
+    if (!currentlyPlaying) return;
+    setIsStatusLoading(true);
+    try {
+      await fetch('/api/games/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId: currentlyPlaying.app_id, status: 'backlog' }),
+      });
+      // Add game back to appropriate carousel based on hours
+      if (currentlyPlaying.main_story_hours <= 5) {
+        setShortGames(prev => [...prev, currentlyPlaying]);
+      } else if (currentlyPlaying.main_story_hours <= 12) {
+        setWeekendGames(prev => [...prev, currentlyPlaying]);
+      }
+      setCurrentlyPlaying(null);
+    } catch (err) {
+      console.error('Failed to cancel game:', err);
+    }
+    setIsStatusLoading(false);
+  };
 
   useEffect(() => {
     if (searchParams.has('error')) {
@@ -129,7 +189,20 @@ function HomeContent() {
             syncingRef.current = false;
           }
 
+          // Fetch currently playing game
+          const { data: playingGame } = await supabase
+            .from('games')
+            .select('app_id, name, header_image, main_story_hours')
+            .eq('user_id', user.id)
+            .eq('status', 'playing')
+            .single();
+
+          if (playingGame) {
+            setCurrentlyPlaying(playingGame);
+          }
+
           // Fetch short games (1-5 hours, single-player only, <4h played, sorted by metacritic)
+          // Exclude finished, dropped, and currently playing games
           const { data: shortGamesData } = await supabase
             .from('games')
             .select('app_id, name, header_image, main_story_hours')
@@ -140,12 +213,14 @@ function HomeContent() {
             .lte('main_story_hours', 5)
             .lte('playtime_forever', 240)
             .contains('categories', ['Single-player'])
+            .or('status.is.null,status.eq.backlog')
             .order('metacritic', { ascending: false })
             .limit(10);
 
           setShortGames(shortGamesData || []);
 
           // Fetch weekend games (5-12 hours, single-player only, <4h played, sorted by metacritic)
+          // Exclude finished, dropped, and currently playing games
           const { data: weekendGamesData } = await supabase
             .from('games')
             .select('app_id, name, header_image, main_story_hours')
@@ -156,6 +231,7 @@ function HomeContent() {
             .lte('main_story_hours', 12)
             .lte('playtime_forever', 240)
             .contains('categories', ['Single-player'])
+            .or('status.is.null,status.eq.backlog')
             .order('metacritic', { ascending: false })
             .limit(10);
 
@@ -176,6 +252,7 @@ function HomeContent() {
       if (!session?.user) {
         setProfile(null);
         setGameCount(0);
+        setCurrentlyPlaying(null);
       }
     });
 
@@ -250,6 +327,16 @@ function HomeContent() {
                         {syncProgress.total}
                       </p>
                     </div>
+                  ) : currentlyPlaying ? (
+                    <div className='mt-6'>
+                      <CurrentlyPlaying
+                        game={currentlyPlaying}
+                        onFinish={handleFinishGame}
+                        onDrop={handleDropGame}
+                        onCancel={handleCancelGame}
+                        isLoading={isStatusLoading}
+                      />
+                    </div>
                   ) : (
                     <div>
                       <Button className='mt-4' size='lg'>
@@ -273,113 +360,16 @@ function HomeContent() {
           {isSteamConnected &&
           (shortGames.length > 0 || weekendGames.length > 0) ? (
             <div className='mt-28 space-y-24'>
-              {shortGames.length > 0 && (
-                <div>
-                  <div className='flex items-center justify-between mb-6'>
-                    <h2 className='text-2xl font-bold text-zinc-100'>
-                      Games Under 5 Hours
-                    </h2>
-                    <div className='flex gap-2'>
-                      <button
-                        onClick={() => scroll(shortGamesRef, 'left')}
-                        className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors'
-                      >
-                        <ChevronLeft className='w-5 h-5 text-zinc-300' />
-                      </button>
-                      <button
-                        onClick={() => scroll(shortGamesRef, 'right')}
-                        className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors'
-                      >
-                        <ChevronRight className='w-5 h-5 text-zinc-300' />
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    ref={shortGamesRef}
-                    className='flex gap-4 overflow-x-auto pb-4 -mx-6 px-6'
-                    style={{ scrollbarWidth: 'none' }}
-                  >
-                    {shortGames.map(game => (
-                      <div
-                        key={game.app_id}
-                        className='flex-shrink-0 w-64 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-colors'
-                      >
-                        {game.header_image ? (
-                          <img
-                            src={game.header_image}
-                            alt={game.name}
-                            className='w-full h-32 object-cover'
-                          />
-                        ) : (
-                          <div className='w-full h-32 bg-zinc-800' />
-                        )}
-                        <div className='p-4'>
-                          <h3 className='text-zinc-100 font-medium truncate'>
-                            {game.name}
-                          </h3>
-                          <p className='text-zinc-500 text-sm mt-1'>
-                            {game.main_story_hours}h to complete
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {weekendGames.length > 0 && (
-                <div>
-                  <div className='flex items-center justify-between mb-6'>
-                    <h2 className='text-2xl font-bold text-zinc-100'>
-                      Games You Can Finish This Weekend
-                    </h2>
-                    <div className='flex gap-2'>
-                      <button
-                        onClick={() => scroll(weekendGamesRef, 'left')}
-                        className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors'
-                      >
-                        <ChevronLeft className='w-5 h-5 text-zinc-300' />
-                      </button>
-                      <button
-                        onClick={() => scroll(weekendGamesRef, 'right')}
-                        className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors'
-                      >
-                        <ChevronRight className='w-5 h-5 text-zinc-300' />
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    ref={weekendGamesRef}
-                    className='flex gap-4 overflow-x-auto pb-4 -mx-6 px-6'
-                    style={{ scrollbarWidth: 'none' }}
-                  >
-                    {weekendGames.map(game => (
-                      <div
-                        key={game.app_id}
-                        className='flex-shrink-0 w-64 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-colors'
-                      >
-                        {game.header_image ? (
-                          <img
-                            src={game.header_image}
-                            alt={game.name}
-                            className='w-full h-32 object-cover'
-                          />
-                        ) : (
-                          <div className='w-full h-32 bg-zinc-800' />
-                        )}
-                        <div className='p-4'>
-                          <h3 className='text-zinc-100 font-medium truncate'>
-                            {game.name}
-                          </h3>
-                          <p className='text-zinc-500 text-sm mt-1'>
-                            {game.main_story_hours}h to complete
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <GameCarousel
+                title='Games Under 5 Hours'
+                games={shortGames}
+                onPickGame={handlePickGame}
+              />
+              <GameCarousel
+                title='Games You Can Finish This Weekend'
+                games={weekendGames}
+                onPickGame={handlePickGame}
+              />
             </div>
           ) : !isSteamConnected ? (
             <div className='mt-24 grid md:grid-cols-3 gap-6 text-center'>

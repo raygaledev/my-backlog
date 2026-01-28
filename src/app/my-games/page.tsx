@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 interface Game {
@@ -77,7 +78,13 @@ export default function MyGames() {
               <tr key={game.app_id} className="border-b border-zinc-800 hover:bg-zinc-900">
                 <td className="px-4 py-3">
                   {game.header_image ? (
-                    <img src={game.header_image} alt="" className="w-24 h-auto rounded" />
+                    <Image
+                      src={game.header_image}
+                      alt={game.name}
+                      width={96}
+                      height={45}
+                      className="rounded"
+                    />
                   ) : '-'}
                 </td>
                 <td className="px-4 py-3 text-zinc-500">{game.app_id}</td>

@@ -1,0 +1,76 @@
+'use client';
+
+import Image from 'next/image';
+import { Button } from '@/components/ui/Button';
+
+interface Game {
+  app_id: number;
+  name: string;
+  header_image: string | null;
+  main_story_hours: number;
+}
+
+interface CurrentlyPlayingProps {
+  game: Game;
+  onFinish: () => void;
+  onDrop: () => void;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
+
+export function CurrentlyPlaying({ game, onFinish, onDrop, onCancel, isLoading }: CurrentlyPlayingProps) {
+  return (
+    <div className='w-full max-w-md mx-auto'>
+      <p className='text-sm text-zinc-500 uppercase tracking-wide mb-3 text-center'>
+        Currently Playing
+      </p>
+      <div className='bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800'>
+        <div className='relative h-48'>
+          {game.header_image ? (
+            <Image
+              src={game.header_image}
+              alt={game.name}
+              fill
+              className='object-cover'
+              sizes='448px'
+            />
+          ) : (
+            <div className='w-full h-full bg-zinc-800' />
+          )}
+        </div>
+        <div className='p-5'>
+          <h3 className='text-xl font-semibold text-zinc-100 mb-1'>
+            {game.name}
+          </h3>
+          <p className='text-zinc-500 text-sm mb-5'>
+            {game.main_story_hours}h to complete
+          </p>
+          <div className='flex gap-3'>
+            <Button
+              onClick={onFinish}
+              disabled={isLoading}
+              className='flex-1 bg-emerald-600 hover:bg-emerald-500'
+            >
+              Finish
+            </Button>
+            <Button
+              onClick={onDrop}
+              disabled={isLoading}
+              variant='secondary'
+              className='flex-1'
+            >
+              Drop
+            </Button>
+          </div>
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className='mt-3 w-full text-sm text-zinc-500 hover:text-zinc-400 transition-colors disabled:opacity-50'
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
