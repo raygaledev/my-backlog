@@ -54,6 +54,7 @@ describe('extractGameMetadata', () => {
     const result = extractGameMetadata(details);
 
     expect(result).toEqual({
+      type: 'game',
       genres: ['Action', 'Adventure'],
       categories: ['Single-player', 'Multi-player'],
       description: 'A test game description',
@@ -94,6 +95,7 @@ describe('extractGameMetadata', () => {
     const result = extractGameMetadata(details);
 
     expect(result).toEqual({
+      type: 'game',
       genres: [],
       categories: [],
       description: null,
@@ -121,5 +123,32 @@ describe('extractGameMetadata', () => {
 
     expect(result?.genres).toEqual([]);
     expect(result?.categories).toEqual([]);
+  });
+
+  it('should extract type for DLC and software', () => {
+    const dlcDetails: SteamGameDetails = {
+      success: true,
+      data: {
+        type: 'dlc',
+        name: 'Some DLC',
+        steam_appid: 22222,
+        short_description: 'DLC content',
+        header_image: 'https://image.url',
+      },
+    };
+
+    const softwareDetails: SteamGameDetails = {
+      success: true,
+      data: {
+        type: 'software',
+        name: 'Wallpaper Engine',
+        steam_appid: 33333,
+        short_description: 'Software app',
+        header_image: 'https://image.url',
+      },
+    };
+
+    expect(extractGameMetadata(dlcDetails)?.type).toBe('dlc');
+    expect(extractGameMetadata(softwareDetails)?.type).toBe('software');
   });
 });
