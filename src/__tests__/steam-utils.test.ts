@@ -47,7 +47,6 @@ describe('extractGameMetadata', () => {
           { id: 2, description: 'Multi-player' },
         ],
         release_date: { coming_soon: false, date: 'Jan 1, 2020' },
-        metacritic: { score: 85 },
       },
     };
 
@@ -59,7 +58,6 @@ describe('extractGameMetadata', () => {
       categories: ['Single-player', 'Multi-player'],
       description: 'A test game description',
       release_date: 'Jan 1, 2020',
-      metacritic: 85,
       header_image: 'https://cdn.steam.com/image.jpg',
     });
   });
@@ -100,7 +98,6 @@ describe('extractGameMetadata', () => {
       categories: [],
       description: null,
       release_date: null,
-      metacritic: null,
       header_image: null,
     });
   });

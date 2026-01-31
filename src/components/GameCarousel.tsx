@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 
@@ -19,65 +19,30 @@ interface GameCarouselProps {
 
 export function GameCarousel({ title, games, onPickGame }: GameCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isScrollingRef = useRef(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Triple the games for infinite effect
-  const tripleGames = [...games, ...games, ...games];
-
-  // Initialize scroll position to start of middle set (first game fully visible)
-  useEffect(() => {
-    if (scrollRef.current && games.length > 0) {
-      // Calculate the exact position where middle set starts
-      // Each card is 256px (w-64) + 16px gap = 272px per card
-      const cardWidth = 272;
-      const middleSetStart = games.length * cardWidth;
-      scrollRef.current.scrollLeft = middleSetStart;
+  const updateScrollButtons = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
     }
-  }, [games.length]);
+  }, []);
 
-  // Handle infinite scroll repositioning
-  const handleScroll = useCallback(() => {
-    if (!scrollRef.current || isScrollingRef.current) return;
-
-    const { scrollLeft } = scrollRef.current;
-    const cardWidth = 272;
-    const singleSetWidth = games.length * cardWidth;
-
-    // If scrolled into first set, jump to middle set
-    if (scrollLeft < singleSetWidth * 0.5) {
-      isScrollingRef.current = true;
-      scrollRef.current.scrollLeft = scrollLeft + singleSetWidth;
-      requestAnimationFrame(() => {
-        isScrollingRef.current = false;
-      });
-    }
-    // If scrolled into last set, jump to middle set
-    else if (scrollLeft > singleSetWidth * 2.5) {
-      isScrollingRef.current = true;
-      scrollRef.current.scrollLeft = scrollLeft - singleSetWidth;
-      requestAnimationFrame(() => {
-        isScrollingRef.current = false;
-      });
-    }
-  }, [games.length]);
-
-  // Debounced scroll handler
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
-    let timeoutId: NodeJS.Timeout;
-    const debouncedScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleScroll, 100);
-    };
+    updateScrollButtons();
+    el.addEventListener('scroll', updateScrollButtons, { passive: true });
+    window.addEventListener('resize', updateScrollButtons);
 
-    el.addEventListener('scroll', debouncedScroll, { passive: true });
     return () => {
-      el.removeEventListener('scroll', debouncedScroll);
-      clearTimeout(timeoutId);
+      el.removeEventListener('scroll', updateScrollButtons);
+      window.removeEventListener('resize', updateScrollButtons);
     };
-  }, [handleScroll]);
+  }, [updateScrollButtons, games]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -98,14 +63,16 @@ export function GameCarousel({ title, games, onPickGame }: GameCarouselProps) {
         <div className='flex gap-2'>
           <button
             onClick={() => scroll('left')}
-            className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer'
+            disabled={!canScrollLeft}
+            className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-zinc-800'
             aria-label='Scroll left'
           >
             <ChevronLeft className='w-5 h-5 text-zinc-300' />
           </button>
           <button
             onClick={() => scroll('right')}
-            className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer'
+            disabled={!canScrollRight}
+            className='p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-zinc-800'
             aria-label='Scroll right'
           >
             <ChevronRight className='w-5 h-5 text-zinc-300' />
@@ -114,7 +81,6 @@ export function GameCarousel({ title, games, onPickGame }: GameCarouselProps) {
       </div>
 
       <div className='relative overflow-hidden'>
-        {/* Fade overlay - right edge */}
         <div
           className='absolute right-0 top-0 bottom-4 w-24 z-10 pointer-events-none'
           style={{
@@ -127,9 +93,9 @@ export function GameCarousel({ title, games, onPickGame }: GameCarouselProps) {
           className='flex gap-4 overflow-x-auto pb-4'
           style={{ scrollbarWidth: 'none' }}
         >
-          {tripleGames.map((game, index) => (
+          {games.map(game => (
             <div
-              key={`${game.app_id}-${index}`}
+              key={game.app_id}
               className='group shrink-0 w-64 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-colors relative'
             >
               <div className='relative h-32'>

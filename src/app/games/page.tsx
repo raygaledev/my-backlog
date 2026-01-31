@@ -10,7 +10,9 @@ interface Game {
   app_id: number;
   name: string;
   playtime_forever: number;
-  metacritic: number | null;
+  steam_review_score: number | null;
+  steam_review_count: number | null;
+  steam_review_weighted: number | null;
   header_image: string | null;
   main_story_hours: number | null;
   status: string | null;
@@ -33,7 +35,7 @@ export default function GamesPage() {
 
       const { data } = await supabase
         .from('games')
-        .select('app_id, name, playtime_forever, metacritic, header_image, main_story_hours, status')
+        .select('app_id, name, playtime_forever, steam_review_score, steam_review_count, steam_review_weighted, header_image, main_story_hours, status')
         .eq('user_id', user.id)
         .eq('type', 'game')
         .order('playtime_forever', { ascending: false });
@@ -159,10 +161,10 @@ export default function GamesPage() {
                           {game.main_story_hours}h
                         </span>
                       )}
-                      {game.metacritic && (
-                        <span className="flex items-center gap-1" title="Metacritic">
+                      {game.steam_review_score && (
+                        <span className="flex items-center gap-1" title={`Steam reviews${game.steam_review_count ? ` (${game.steam_review_count.toLocaleString()} reviews)` : ''}`}>
                           <Star className="w-3 h-3" />
-                          {game.metacritic}
+                          {game.steam_review_score}%
                         </span>
                       )}
                       {game.playtime_forever > 0 && (

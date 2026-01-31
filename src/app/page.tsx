@@ -44,8 +44,12 @@ function HomeContent() {
   const [syncingGames, setSyncingGames] = useState<Game[]>([]);
   const [carouselsLoading, setCarouselsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [shortGames, setShortGames] = useState<ShortGame[]>([]);
-  const [weekendGames, setWeekendGames] = useState<ShortGame[]>([]);
+  const [shortGamesPool, setShortGamesPool] = useState<ShortGame[]>([]);
+  const [weekendGamesPool, setWeekendGamesPool] = useState<ShortGame[]>([]);
+
+  // Display only first 10 games from each pool
+  const shortGames = shortGamesPool.slice(0, 10);
+  const weekendGames = weekendGamesPool.slice(0, 10);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<ShortGame | null>(
     null,
   );
@@ -84,8 +88,8 @@ function HomeContent() {
         body: JSON.stringify({ appId: game.app_id, status: 'playing' }),
       });
       setCurrentlyPlaying(game);
-      setShortGames(prev => prev.filter(g => g.app_id !== game.app_id));
-      setWeekendGames(prev => prev.filter(g => g.app_id !== game.app_id));
+      setShortGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
+      setWeekendGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
     } catch (err) {
       console.error('Failed to pick game:', err);
     }
@@ -147,9 +151,9 @@ function HomeContent() {
         }),
       });
       if (currentlyPlaying.main_story_hours <= 5) {
-        setShortGames(prev => [...prev, currentlyPlaying]);
+        setShortGamesPool(prev => [...prev, currentlyPlaying]);
       } else if (currentlyPlaying.main_story_hours <= 12) {
-        setWeekendGames(prev => [...prev, currentlyPlaying]);
+        setWeekendGamesPool(prev => [...prev, currentlyPlaying]);
       }
       setCurrentlyPlaying(null);
     } catch (err) {
@@ -279,16 +283,15 @@ function HomeContent() {
             .eq('user_id', user.id)
             .eq('type', 'game')
             .not('main_story_hours', 'is', null)
-            .not('metacritic', 'is', null)
+            .not('steam_review_weighted', 'is', null)
             .gte('main_story_hours', 1)
             .lte('main_story_hours', 5)
             .lte('playtime_forever', 240)
             .contains('categories', ['Single-player'])
             .or('status.is.null,status.eq.backlog')
-            .order('metacritic', { ascending: false })
-            .limit(10);
+            .order('steam_review_weighted', { ascending: false });
 
-          setShortGames(shortGamesData || []);
+          setShortGamesPool(shortGamesData || []);
 
           const { data: weekendGamesData } = await supabase
             .from('games')
@@ -296,16 +299,15 @@ function HomeContent() {
             .eq('user_id', user.id)
             .eq('type', 'game')
             .not('main_story_hours', 'is', null)
-            .not('metacritic', 'is', null)
+            .not('steam_review_weighted', 'is', null)
             .gt('main_story_hours', 5)
             .lte('main_story_hours', 12)
             .lte('playtime_forever', 240)
             .contains('categories', ['Single-player'])
             .or('status.is.null,status.eq.backlog')
-            .order('metacritic', { ascending: false })
-            .limit(10);
+            .order('steam_review_weighted', { ascending: false });
 
-          setWeekendGames(weekendGamesData || []);
+          setWeekendGamesPool(weekendGamesData || []);
           setCarouselsLoading(false);
           return;
         }
@@ -403,14 +405,19 @@ function HomeContent() {
                       />
                     </div>
                     <p className='text-zinc-400 text-sm'>
-                      Analyzing {syncProgress.current} of {syncProgress.total}{' '}
-                      games
+                      Analyzing game {syncProgress.current} of{' '}
+                      {syncProgress.total}...
                     </p>
                   </div>
 
                   {syncingGames[syncProgress.current - 1] && (
                     <div className='relative rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900'>
-                      <div className='relative aspect-460/215'>
+                      <div className='relative aspect-460/215 bg-zinc-800'>
+                        <div className='absolute inset-0 flex items-center justify-center p-4'>
+                          <p className='text-zinc-400 text-center font-medium truncate max-w-full'>
+                            {syncingGames[syncProgress.current - 1].name}
+                          </p>
+                        </div>
                         <Image
                           src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${syncingGames[syncProgress.current - 1].app_id}/header.jpg`}
                           alt={syncingGames[syncProgress.current - 1].name}

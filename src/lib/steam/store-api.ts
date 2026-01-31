@@ -9,7 +9,17 @@ export interface SteamGameDetails {
     genres?: Array<{ id: string; description: string }>;
     categories?: Array<{ id: number; description: string }>;
     release_date?: { coming_soon: boolean; date: string };
-    metacritic?: { score: number };
+  };
+}
+
+export interface SteamReviewsResponse {
+  success: number;
+  query_summary: {
+    review_score: number;
+    review_score_desc: string;
+    total_positive: number;
+    total_negative: number;
+    total_reviews: number;
   };
 }
 
@@ -44,7 +54,38 @@ export function extractGameMetadata(details: SteamGameDetails) {
     categories: data.categories?.map((c) => c.description) || [],
     description: data.short_description || null,
     release_date: data.release_date?.date || null,
-    metacritic: data.metacritic?.score || null,
     header_image: data.header_image || null,
   };
+}
+
+export interface SteamReviewData {
+  score: number;
+  count: number;
+}
+
+export async function getSteamReviewData(appId: number): Promise<SteamReviewData | null> {
+  try {
+    const response = await fetch(
+      `https://store.steampowered.com/appreviews/${appId}?json=1&language=all&purchase_type=all`,
+      { next: { revalidate: 86400 } }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: SteamReviewsResponse = await response.json();
+
+    if (!data.success || !data.query_summary || data.query_summary.total_reviews === 0) {
+      return null;
+    }
+
+    const { total_positive, total_reviews } = data.query_summary;
+    return {
+      score: Math.round((total_positive / total_reviews) * 100),
+      count: total_reviews,
+    };
+  } catch {
+    return null;
+  }
 }

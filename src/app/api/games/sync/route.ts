@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getGameDetails, extractGameMetadata } from "@/lib/steam/store-api";
+import { getGameDetails, extractGameMetadata, getSteamReviewData } from "@/lib/steam/store-api";
 import { getMainStoryHours } from "@/lib/hltb/api";
 
 export async function POST(request: NextRequest) {
@@ -24,9 +24,22 @@ export async function POST(request: NextRequest) {
   if (metadata) {
     const isGame = metadata.type === 'game';
 
-    // Only fetch HLTB for actual games
-    const mainStoryHours = isGame && details?.data?.name
-      ? await getMainStoryHours(details.data.name)
+    // Only fetch HLTB and Steam reviews for actual games
+    const [mainStoryHours, steamReviewData] = isGame
+      ? await Promise.all([
+          details?.data?.name ? getMainStoryHours(details.data.name) : null,
+          getSteamReviewData(appId),
+        ])
+      : [null, null];
+
+    // Calculate weighted score using Bayesian average
+    // Formula: (count / (count + m)) * score + (m / (count + m)) * average
+    // Where m = 100 (threshold) and average = 70 (assumed average score)
+    const weightedScore = steamReviewData
+      ? Math.round(
+          (steamReviewData.count / (steamReviewData.count + 100)) * steamReviewData.score +
+          (100 / (steamReviewData.count + 100)) * 70
+        )
       : null;
 
     // Update game with metadata
@@ -38,7 +51,9 @@ export async function POST(request: NextRequest) {
         categories: metadata.categories,
         description: metadata.description,
         release_date: metadata.release_date,
-        metacritic: metadata.metacritic,
+        steam_review_score: steamReviewData?.score ?? null,
+        steam_review_count: steamReviewData?.count ?? null,
+        steam_review_weighted: weightedScore,
         header_image: metadata.header_image,
         main_story_hours: mainStoryHours,
         metadata_synced: true,
@@ -46,7 +61,16 @@ export async function POST(request: NextRequest) {
       .eq("user_id", user.id)
       .eq("app_id", appId);
 
-    return NextResponse.json({ success: true, metadata: { ...metadata, main_story_hours: mainStoryHours } });
+    return NextResponse.json({
+      success: true,
+      metadata: {
+        ...metadata,
+        main_story_hours: mainStoryHours,
+        steam_review_score: steamReviewData?.score ?? null,
+        steam_review_count: steamReviewData?.count ?? null,
+        steam_review_weighted: weightedScore,
+      }
+    });
   } else {
     // Mark as synced even if no data (game might be removed from store)
     await supabase
