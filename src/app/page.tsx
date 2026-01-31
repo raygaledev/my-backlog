@@ -9,7 +9,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { GameCarousel } from '@/components/GameCarousel';
 import { CurrentlyPlaying } from '@/components/CurrentlyPlaying';
 import { createClient } from '@/lib/supabase/client';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Dices } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
 interface Profile {
@@ -164,6 +164,30 @@ function HomeContent() {
       console.error('Failed to refresh library:', err);
     }
     setIsRefreshing(false);
+  };
+
+  const handleRandomPick = async () => {
+    const supabase = createClient();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+    if (!currentUser) return;
+
+    const { data: eligibleGames } = await supabase
+      .from('games')
+      .select('app_id, name, header_image, main_story_hours')
+      .eq('user_id', currentUser.id)
+      .eq('type', 'game')
+      .not('main_story_hours', 'is', null)
+      .lte('playtime_forever', 120) // 2 hours or less
+      .contains('categories', ['Single-player'])
+      .or('status.is.null,status.eq.backlog');
+
+    if (!eligibleGames || eligibleGames.length === 0) return;
+
+    const randomIndex = Math.floor(Math.random() * eligibleGames.length);
+    const randomGame = eligibleGames[randomIndex];
+    await handlePickGame(randomGame);
   };
 
   useEffect(() => {
@@ -454,9 +478,18 @@ function HomeContent() {
                   </div>
                 </div>
               ) : (
-                <Button size='lg' className='cursor-pointer'>
-                  Pick My Game
-                </Button>
+                <div className='flex items-center gap-2'>
+                  <Button size='lg' className='cursor-pointer'>
+                    Pick My Game
+                  </Button>
+                  <button
+                    onClick={handleRandomPick}
+                    className='cursor-pointer p-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors'
+                    title='Pick a random game (2h or less playtime)'
+                  >
+                    <Dices className='w-5 h-5 text-zinc-100' />
+                  </button>
+                </div>
               )}
             </div>
           </section>
