@@ -225,7 +225,7 @@ function HomeContent() {
             <section className='max-w-6xl mx-auto px-6 pb-24 space-y-16'>
               {shortGames.length > 0 && (
                 <GameCarousel
-                  title='Games Under 5 Hours'
+                  title='Top-Rated Games Under 5 Hours'
                   games={shortGames}
                   onPickGame={!currentlyPlaying ? handlePickGame : undefined}
                   onHideGame={handleHideGame}
@@ -241,7 +241,7 @@ function HomeContent() {
               )}
               {weekendGames.length > 0 && (
                 <GameCarousel
-                  title='Games You Can Finish This Weekend'
+                  title='Beat It in a Weekend'
                   games={weekendGames}
                   onPickGame={!currentlyPlaying ? handlePickGame : undefined}
                   onHideGame={handleHideGame}
