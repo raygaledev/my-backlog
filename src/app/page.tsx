@@ -105,6 +105,7 @@ function HomeContent() {
     gameCount,
     shortGames,
     weekendGames,
+    highlyRatedGames,
     currentlyPlaying,
     isSyncing,
     syncProgress,
@@ -218,12 +219,22 @@ function HomeContent() {
 
         {!isSyncing &&
           !carouselsLoading &&
-          (shortGames.length > 0 || weekendGames.length > 0) && (
-            <section className='max-w-6xl mx-auto px-6 pb-24 space-y-24'>
+          (shortGames.length > 0 ||
+            weekendGames.length > 0 ||
+            highlyRatedGames.length > 0) && (
+            <section className='max-w-6xl mx-auto px-6 pb-24 space-y-16'>
               {shortGames.length > 0 && (
                 <GameCarousel
                   title='Games Under 5 Hours'
                   games={shortGames}
+                  onPickGame={!currentlyPlaying ? handlePickGame : undefined}
+                  onHideGame={handleHideGame}
+                />
+              )}
+              {highlyRatedGames.length > 0 && (
+                <GameCarousel
+                  title='Highly Rated, Never Played'
+                  games={highlyRatedGames}
                   onPickGame={!currentlyPlaying ? handlePickGame : undefined}
                   onHideGame={handleHideGame}
                 />

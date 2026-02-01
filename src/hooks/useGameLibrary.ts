@@ -16,6 +16,7 @@ interface UseGameLibraryReturn {
   gameCount: number;
   shortGames: GameWithImage[];
   weekendGames: GameWithImage[];
+  highlyRatedGames: GameWithImage[];
   currentlyPlaying: GameWithImage | null;
 
   // Sync state
@@ -52,6 +53,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [shortGamesPool, setShortGamesPool] = useState<GameWithImage[]>([]);
   const [weekendGamesPool, setWeekendGamesPool] = useState<GameWithImage[]>([]);
+  const [highlyRatedGamesPool, setHighlyRatedGamesPool] = useState<GameWithImage[]>([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<GameWithImage | null>(null);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState<string | null>(null);
@@ -60,6 +62,15 @@ export function useGameLibrary(): UseGameLibraryReturn {
   // Display only first 10 games from each pool
   const shortGames = shortGamesPool.slice(0, 10);
   const weekendGames = weekendGamesPool.slice(0, 10);
+
+  // Deduplicate highly rated games - exclude games shown in other carousels
+  const excludedAppIds = new Set([
+    ...shortGames.map(g => g.app_id),
+    ...weekendGames.map(g => g.app_id),
+  ]);
+  const highlyRatedGames = highlyRatedGamesPool
+    .filter(g => !excludedAppIds.has(g.app_id))
+    .slice(0, 10);
 
   const syncGames = useCallback(async (games: Game[]) => {
     const BATCH_SIZE = 3;
@@ -99,6 +110,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
       setCurrentlyPlaying(game);
       setShortGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
       setWeekendGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
+      setHighlyRatedGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
     } catch (err) {
       console.error('Failed to pick game:', err);
     }
@@ -156,6 +168,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
       });
       setShortGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
       setWeekendGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
+      setHighlyRatedGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
     } catch (err) {
       console.error('Failed to hide game:', err);
     }
@@ -323,6 +336,21 @@ export function useGameLibrary(): UseGameLibraryReturn {
             .order('steam_review_weighted', { ascending: false });
 
           setWeekendGamesPool(weekendGamesData || []);
+
+          // Highly rated games the user has never played (0 playtime)
+          const { data: highlyRatedData } = await supabase
+            .from('games')
+            .select('app_id, name, header_image, main_story_hours')
+            .eq('user_id', user.id)
+            .eq('type', 'game')
+            .not('steam_review_weighted', 'is', null)
+            .eq('playtime_forever', 0)
+            .contains('categories', ['Single-player'])
+            .or('status.is.null,status.eq.backlog')
+            .order('steam_review_weighted', { ascending: false })
+            .limit(20); // Fetch extra to account for deduplication
+
+          setHighlyRatedGamesPool(highlyRatedData || []);
           setCarouselsLoading(false);
           return;
         }
@@ -354,6 +382,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
     gameCount,
     shortGames,
     weekendGames,
+    highlyRatedGames,
     currentlyPlaying,
     isSyncing,
     syncProgress,
