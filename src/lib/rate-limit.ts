@@ -97,4 +97,6 @@ export const RATE_LIMITS = {
   gameSync: { limit: 10, windowMs: 60 * 1000 },
   // 10 requests per hour for Steam refresh
   steamRefresh: { limit: 10, windowMs: 60 * 60 * 1000 },
+  // 20 requests per minute for AI suggestions (accounts for rerolls)
+  suggestion: { limit: 20, windowMs: 60 * 1000 },
 } as const;

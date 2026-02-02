@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Header } from '@/components/Header';
@@ -9,6 +9,7 @@ import { GameCarousel } from '@/components/GameCarousel';
 import { CurrentlyPlaying } from '@/components/CurrentlyPlaying';
 import { SyncProgress } from '@/components/SyncProgress';
 import { LandingPage } from '@/components/LandingPage';
+import { SuggestionModal } from '@/components/suggest';
 import { useGameLibrary } from '@/hooks/useGameLibrary';
 import { RefreshCw, Dices } from 'lucide-react';
 
@@ -97,6 +98,7 @@ function CelebrationMessage({ gameName }: { gameName: string }) {
 function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
   const {
     user,
@@ -129,6 +131,18 @@ function HomeContent() {
       router.replace('/', { scroll: false });
     }
   }, [searchParams, router]);
+
+  const handleSuggestionPick = useCallback(
+    async (appId: number, name: string, headerImage: string | null, mainStoryHours: number | null) => {
+      await handlePickGame({
+        app_id: appId,
+        name,
+        header_image: headerImage,
+        main_story_hours: mainStoryHours ?? 0,
+      });
+    },
+    [handlePickGame]
+  );
 
   const isSteamConnected = profile?.steam_id != null;
   const showDashboard = user && isSteamConnected;
@@ -199,7 +213,11 @@ function HomeContent() {
               <CelebrationMessage gameName={celebrationMessage} />
             ) : (
               <div className='flex items-center gap-2'>
-                <Button size='lg' className='cursor-pointer'>
+                <Button
+                  size='lg'
+                  className='cursor-pointer'
+                  onClick={() => setIsSuggestionModalOpen(true)}
+                >
                   Pick My Game
                 </Button>
                 <button
@@ -256,6 +274,12 @@ function HomeContent() {
           <p className='text-sm text-zinc-500'>MyBacklog</p>
         </div>
       </footer>
+
+      <SuggestionModal
+        isOpen={isSuggestionModalOpen}
+        onClose={() => setIsSuggestionModalOpen(false)}
+        onPick={handleSuggestionPick}
+      />
     </div>
   );
 }
