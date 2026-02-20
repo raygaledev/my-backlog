@@ -27,23 +27,13 @@ const mockGames = [
 describe('SyncProgress', () => {
   describe('progress display', () => {
     it('should show progress text', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 5, total: 10 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 5, total: 10 }} games={mockGames} />);
 
       expect(screen.getByText(/Analyzing game 5 of 10/)).toBeInTheDocument();
     });
 
     it('should render progress bar with correct aria attributes', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 3, total: 10 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 3, total: 10 }} games={mockGames} />);
 
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toHaveAttribute('aria-valuenow', '3');
@@ -52,36 +42,21 @@ describe('SyncProgress', () => {
     });
 
     it('should show 0% width when no progress', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 0, total: 10 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 0, total: 10 }} games={mockGames} />);
 
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toHaveStyle({ width: '0%' });
     });
 
     it('should show 50% width when half done', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 5, total: 10 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 5, total: 10 }} games={mockGames} />);
 
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toHaveStyle({ width: '50%' });
     });
 
     it('should handle edge case of zero total', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 0, total: 0 }}
-          games={[]}
-        />
-      );
+      render(<SyncProgress progress={{ current: 0, total: 0 }} games={[]} />);
 
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toHaveStyle({ width: '0%' });
@@ -90,50 +65,30 @@ describe('SyncProgress', () => {
 
   describe('current game display', () => {
     it('should show current game name when syncing', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 2, total: 3 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 2, total: 3 }} games={mockGames} />);
 
       // current - 1 = index 1 = "Game Two"
       expect(screen.getByText('Game Two')).toBeInTheDocument();
     });
 
     it('should show game image with correct src', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 1, total: 3 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 1, total: 3 }} games={mockGames} />);
 
       const img = screen.getByAltText('Game One');
       expect(img).toHaveAttribute(
         'src',
-        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1/header.jpg'
+        'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1/header.jpg',
       );
     });
 
     it('should not show game card when progress.current is 0', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 0, total: 3 }}
-          games={mockGames}
-        />
-      );
+      render(<SyncProgress progress={{ current: 0, total: 3 }} games={mockGames} />);
 
       expect(screen.queryByText('Game One')).not.toBeInTheDocument();
     });
 
     it('should not show game card when games array is empty', () => {
-      render(
-        <SyncProgress
-          progress={{ current: 1, total: 3 }}
-          games={[]}
-        />
-      );
+      render(<SyncProgress progress={{ current: 1, total: 3 }} games={[]} />);
 
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
     });
@@ -142,10 +97,7 @@ describe('SyncProgress', () => {
   describe('visual elements', () => {
     it('should render corner brackets', () => {
       const { container } = render(
-        <SyncProgress
-          progress={{ current: 1, total: 3 }}
-          games={mockGames}
-        />
+        <SyncProgress progress={{ current: 1, total: 3 }} games={mockGames} />,
       );
 
       // Check for corner bracket elements (border styling)

@@ -23,7 +23,9 @@ export function Header({ hideGamesLink }: HeaderProps = {}) {
     const supabase = createClient();
 
     async function loadUserData() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
@@ -66,50 +68,46 @@ export function Header({ hideGamesLink }: HeaderProps = {}) {
 
   return (
     <>
-      <header className='fixed top-0 left-0 right-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md'>
-        <div className='max-w-6xl mx-auto px-6 h-16 flex items-center justify-between'>
-          <div className='flex items-center gap-6'>
-            <Link href='/' className='flex items-center gap-2'>
-              <div className='w-8 h-8 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-lg' />
-              <span className='text-xl font-bold text-zinc-100'>MyBacklog</span>
+      <header className="fixed top-0 left-0 right-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-lg" />
+              <span className="text-xl font-bold text-zinc-100">MyBacklog</span>
             </Link>
             {user && !hideGamesLink && (
               <Link
-                href='/games'
-                className='text-sm text-zinc-400 hover:text-zinc-100 transition-colors'
+                href="/games"
+                className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
               >
                 Games
               </Link>
             )}
           </div>
 
-          <nav className='flex items-center gap-3'>
+          <nav className="flex items-center gap-3">
             {isLoading ? (
-              <div className='w-20 h-9 bg-zinc-800 rounded-lg animate-pulse' />
+              <div className="w-20 h-9 bg-zinc-800 rounded-lg animate-pulse" />
             ) : user ? (
-              <div className='flex items-center gap-4'>
-                <span className='text-sm text-zinc-400 hidden sm:block'>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-zinc-400 hidden sm:block">
                   {steamUsername ?? user.email}
                 </span>
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   onClick={handleSignOut}
-                  className='cursor-pointer'
+                  className="cursor-pointer"
                 >
                   Sign Out
                 </Button>
               </div>
             ) : (
               <>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => openAuthModal('login')}
-                >
+                <Button variant="ghost" size="sm" onClick={() => openAuthModal('login')}>
                   Sign In
                 </Button>
-                <Button size='sm' onClick={() => openAuthModal('signup')}>
+                <Button size="sm" onClick={() => openAuthModal('signup')}>
                   Get Started
                 </Button>
               </>

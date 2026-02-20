@@ -87,9 +87,7 @@ export function useGamesPage(): UseGamesPageReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appId, status }),
       });
-      setGames(prev =>
-        prev.map(g => (g.app_id === appId ? { ...g, status } : g)),
-      );
+      setGames((prev) => prev.map((g) => (g.app_id === appId ? { ...g, status } : g)));
     } catch (err) {
       console.error('Failed to update game status:', err);
     }
@@ -100,7 +98,7 @@ export function useGamesPage(): UseGamesPageReturn {
   const filteredGames = useMemo(() => {
     const searchLower = deferredSearchQuery.toLowerCase();
 
-    const filtered = games.filter(game => {
+    const filtered = games.filter((game) => {
       // Status filter
       if (filter === 'all' && game.status === 'hidden') return false;
       if (filter === 'backlog' && game.status && game.status !== 'backlog') return false;
@@ -120,7 +118,7 @@ export function useGamesPage(): UseGamesPageReturn {
         case 'score':
           return (b.steam_review_weighted ?? 0) - (a.steam_review_weighted ?? 0);
         case 'recent':
-          return (b.app_id) - (a.app_id);
+          return b.app_id - a.app_id;
         case 'playtime':
         default:
           return b.playtime_forever - a.playtime_forever;
@@ -130,10 +128,10 @@ export function useGamesPage(): UseGamesPageReturn {
 
   const counts: FilterCounts = {
     all: games.length,
-    backlog: games.filter(g => !g.status || g.status === 'backlog').length,
-    finished: games.filter(g => g.status === 'finished').length,
-    dropped: games.filter(g => g.status === 'dropped').length,
-    hidden: games.filter(g => g.status === 'hidden').length,
+    backlog: games.filter((g) => !g.status || g.status === 'backlog').length,
+    finished: games.filter((g) => g.status === 'finished').length,
+    dropped: games.filter((g) => g.status === 'dropped').length,
+    hidden: games.filter((g) => g.status === 'hidden').length,
   };
 
   return {

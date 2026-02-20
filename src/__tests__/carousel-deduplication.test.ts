@@ -4,15 +4,13 @@ import type { GameWithImage } from '@/types/games';
 function deduplicateHighlyRatedGames(
   highlyRatedPool: GameWithImage[],
   shortGames: GameWithImage[],
-  weekendGames: GameWithImage[]
+  weekendGames: GameWithImage[],
 ): GameWithImage[] {
   const excludedAppIds = new Set([
-    ...shortGames.map(g => g.app_id),
-    ...weekendGames.map(g => g.app_id),
+    ...shortGames.map((g) => g.app_id),
+    ...weekendGames.map((g) => g.app_id),
   ]);
-  return highlyRatedPool
-    .filter(g => !excludedAppIds.has(g.app_id))
-    .slice(0, 10);
+  return highlyRatedPool.filter((g) => !excludedAppIds.has(g.app_id)).slice(0, 10);
 }
 
 describe('carousel deduplication', () => {
@@ -72,9 +70,7 @@ describe('carousel deduplication', () => {
     });
 
     it('should limit to 10 games after deduplication', () => {
-      const highlyRated = Array.from({ length: 15 }, (_, i) =>
-        createGame(i + 1, `Game ${i + 1}`)
-      );
+      const highlyRated = Array.from({ length: 15 }, (_, i) => createGame(i + 1, `Game ${i + 1}`));
       const shortGames: GameWithImage[] = [];
       const weekendGames: GameWithImage[] = [];
 
@@ -115,7 +111,7 @@ describe('carousel deduplication', () => {
 
       const result = deduplicateHighlyRatedGames(highlyRated, shortGames, weekendGames);
 
-      expect(result.map(g => g.app_id)).toEqual([1, 3, 4]);
+      expect(result.map((g) => g.app_id)).toEqual([1, 3, 4]);
     });
   });
 });

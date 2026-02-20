@@ -126,7 +126,7 @@ describe('buildSuggestionPrompt', () => {
   it('should handle all mood types', () => {
     const moods = ['adrenaline', 'relaxed', 'engaged', 'emotional'] as const;
 
-    moods.forEach(mood => {
+    moods.forEach((mood) => {
       const context: SuggestionContext = {
         ...baseContext,
         preferences: { ...baseContext.preferences, mood },

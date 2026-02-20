@@ -19,13 +19,7 @@ describe('GamesFilter', () => {
 
   describe('rendering', () => {
     it('should render all filter buttons', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       expect(screen.getByText(/All/)).toBeInTheDocument();
       expect(screen.getByText(/Backlog/)).toBeInTheDocument();
@@ -35,13 +29,7 @@ describe('GamesFilter', () => {
     });
 
     it('should display counts for each filter', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       expect(screen.getByText('100')).toBeInTheDocument();
       expect(screen.getByText('50')).toBeInTheDocument();
@@ -52,11 +40,7 @@ describe('GamesFilter', () => {
 
     it('should highlight active filter', () => {
       const { rerender } = render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
+        <GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />,
       );
 
       // All button should have active styles
@@ -65,11 +49,7 @@ describe('GamesFilter', () => {
 
       // Rerender with different filter
       rerender(
-        <GamesFilter
-          filter='finished'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
+        <GamesFilter filter="finished" counts={mockCounts} onFilterChange={mockOnFilterChange} />,
       );
 
       // Finished button should now have active styles
@@ -81,11 +61,7 @@ describe('GamesFilter', () => {
   describe('interactions', () => {
     it('should call onFilterChange when All clicked', () => {
       render(
-        <GamesFilter
-          filter='backlog'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
+        <GamesFilter filter="backlog" counts={mockCounts} onFilterChange={mockOnFilterChange} />,
       );
 
       fireEvent.click(screen.getByText(/All/));
@@ -94,13 +70,7 @@ describe('GamesFilter', () => {
     });
 
     it('should call onFilterChange when Backlog clicked', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       fireEvent.click(screen.getByText(/Backlog/));
 
@@ -108,13 +78,7 @@ describe('GamesFilter', () => {
     });
 
     it('should call onFilterChange when Finished clicked', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       fireEvent.click(screen.getByText(/Finished/));
 
@@ -122,13 +86,7 @@ describe('GamesFilter', () => {
     });
 
     it('should call onFilterChange when Dropped clicked', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       fireEvent.click(screen.getByText(/Dropped/));
 
@@ -136,13 +94,7 @@ describe('GamesFilter', () => {
     });
 
     it('should call onFilterChange when Hidden clicked', () => {
-      render(
-        <GamesFilter
-          filter='all'
-          counts={mockCounts}
-          onFilterChange={mockOnFilterChange}
-        />
-      );
+      render(<GamesFilter filter="all" counts={mockCounts} onFilterChange={mockOnFilterChange} />);
 
       fireEvent.click(screen.getByText(/Hidden/));
 

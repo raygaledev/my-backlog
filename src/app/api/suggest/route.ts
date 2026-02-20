@@ -30,8 +30,8 @@ function validatePreferences(body: unknown): SuggestionPreferences | null {
 
 function validateExcludeAppIds(value: unknown): number[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((id): id is number =>
-    typeof id === 'number' && Number.isInteger(id) && id > 0
+  return value.filter(
+    (id): id is number => typeof id === 'number' && Number.isInteger(id) && id > 0,
   );
 }
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
       { success: false, error: 'AI suggestions not configured' },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -56,19 +56,18 @@ export async function POST(request: NextRequest) {
         headers: {
           'Retry-After': Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString(),
         },
-      }
+      },
     );
   }
 
   // Authentication
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   // Parse and validate request body
@@ -76,29 +75,27 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { success: false, error: 'Invalid JSON' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
   }
 
   const preferences = validatePreferences(body);
   if (!preferences) {
-    return NextResponse.json(
-      { success: false, error: 'Invalid preferences' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'Invalid preferences' }, { status: 400 });
   }
 
   const excludeAppIds = validateExcludeAppIds((body as Record<string, unknown>).excludeAppIds);
   const previousReasonings = Array.isArray((body as Record<string, unknown>).previousReasonings)
-    ? ((body as Record<string, unknown>).previousReasonings as string[]).filter(r => typeof r === 'string')
+    ? ((body as Record<string, unknown>).previousReasonings as string[]).filter(
+        (r) => typeof r === 'string',
+      )
     : [];
 
   // Fetch user's games
   const { data: backlogGames, error: backlogError } = await supabase
     .from('games')
-    .select('app_id, name, genres, categories, main_story_hours, playtime_forever, steam_review_weighted, reroll_count')
+    .select(
+      'app_id, name, genres, categories, main_story_hours, playtime_forever, steam_review_weighted, reroll_count',
+    )
     .eq('user_id', user.id)
     .eq('type', 'game')
     .or('status.is.null,status.eq.backlog')
@@ -107,17 +104,11 @@ export async function POST(request: NextRequest) {
 
   if (backlogError) {
     console.error('Failed to fetch backlog games:', backlogError);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch games' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch games' }, { status: 500 });
   }
 
   if (!backlogGames || backlogGames.length === 0) {
-    return NextResponse.json(
-      { success: false, error: 'No games in backlog' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'No games in backlog' }, { status: 400 });
   }
 
   // Fetch finished games for context
@@ -139,28 +130,35 @@ export async function POST(request: NextRequest) {
   // Build context for AI
   const context: SuggestionContext = {
     preferences,
-    backlogGames: backlogGames.map((g): GameForSuggestion => ({
-      app_id: g.app_id,
-      name: g.name,
-      genres: g.genres,
-      categories: g.categories,
-      main_story_hours: g.main_story_hours,
-      playtime_forever: g.playtime_forever ?? 0,
-      steam_review_weighted: g.steam_review_weighted,
-      reroll_count: g.reroll_count ?? 0,
-    })),
-    finishedGames: finishedGames?.map(g => g.name) ?? [],
-    droppedGames: droppedGames?.map(g => g.name) ?? [],
+    backlogGames: backlogGames.map(
+      (g): GameForSuggestion => ({
+        app_id: g.app_id,
+        name: g.name,
+        genres: g.genres,
+        categories: g.categories,
+        main_story_hours: g.main_story_hours,
+        playtime_forever: g.playtime_forever ?? 0,
+        steam_review_weighted: g.steam_review_weighted,
+        reroll_count: g.reroll_count ?? 0,
+      }),
+    ),
+    finishedGames: finishedGames?.map((g) => g.name) ?? [],
+    droppedGames: droppedGames?.map((g) => g.name) ?? [],
     excludeAppIds,
     previousReasonings,
   };
 
   // Check if there are any eligible games after exclusions
-  const eligibleCount = context.backlogGames.filter(g => !excludeAppIds.includes(g.app_id)).length;
+  const eligibleCount = context.backlogGames.filter(
+    (g) => !excludeAppIds.includes(g.app_id),
+  ).length;
   if (eligibleCount === 0) {
     return NextResponse.json(
-      { success: false, error: 'No more games to suggest. Try with different filters or clear exclusions.' },
-      { status: 400 }
+      {
+        success: false,
+        error: 'No more games to suggest. Try with different filters or clear exclusions.',
+      },
+      { status: 400 },
     );
   }
 
@@ -172,7 +170,7 @@ export async function POST(request: NextRequest) {
     console.error('Failed to build prompt:', err);
     return NextResponse.json(
       { success: false, error: 'Failed to build suggestion request' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -192,7 +190,7 @@ export async function POST(request: NextRequest) {
     console.error('OpenAI API error:', err);
     return NextResponse.json(
       { success: false, error: 'AI service temporarily unavailable' },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -204,17 +202,17 @@ export async function POST(request: NextRequest) {
     console.error('Failed to parse AI response:', err, aiResponse);
     return NextResponse.json(
       { success: false, error: 'Failed to parse AI suggestion' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   // Verify the suggested game exists in user's backlog
-  const suggestedGame = backlogGames.find(g => g.app_id === parsedResponse.app_id);
+  const suggestedGame = backlogGames.find((g) => g.app_id === parsedResponse.app_id);
   if (!suggestedGame) {
     console.error('AI suggested non-existent game:', parsedResponse.app_id);
     return NextResponse.json(
       { success: false, error: 'AI suggested an invalid game. Please try again.' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 

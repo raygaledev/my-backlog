@@ -94,8 +94,4 @@ export const TIME_QUESTION: Question<TimeCommitment> = {
   ],
 };
 
-export const QUESTIONS = [
-  MOOD_QUESTION,
-  ENERGY_QUESTION,
-  TIME_QUESTION,
-] as const;
+export const QUESTIONS = [MOOD_QUESTION, ENERGY_QUESTION, TIME_QUESTION] as const;

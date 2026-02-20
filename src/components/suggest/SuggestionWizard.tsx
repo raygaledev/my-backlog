@@ -27,23 +27,23 @@ export function SuggestionWizard({
   const canGoBack = step !== 'mood';
 
   return (
-    <div className='flex flex-col items-center py-4'>
+    <div className="flex flex-col items-center py-4">
       {/* Header with back button and progress */}
-      <div className='flex items-center justify-center w-full mb-8 relative'>
+      <div className="flex items-center justify-center w-full mb-8 relative">
         {/* Back button */}
         {canGoBack && (
           <button
             onClick={onBack}
-            className='absolute left-0 flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer'
+            className="absolute left-0 flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
           >
-            <ChevronLeft className='w-4 h-4' />
-            <span className='text-sm'>Back</span>
+            <ChevronLeft className="w-4 h-4" />
+            <span className="text-sm">Back</span>
           </button>
         )}
 
         {/* Progress dots */}
-        <div className='flex items-center gap-2'>
-          {[1, 2, 3].map(num => (
+        <div className="flex items-center gap-2">
+          {[1, 2, 3].map((num) => (
             <div
               key={num}
               className={`w-2 h-2 rounded-full transition-colors ${

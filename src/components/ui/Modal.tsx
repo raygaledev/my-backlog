@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback, ReactNode } from "react";
+import { useEffect, useCallback, ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,22 +12,22 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, children, title }: ModalProps) {
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen, handleEscape]);
 
@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           className="relative z-10 w-full max-w-md bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800"
           role="dialog"
           aria-modal="true"
-          aria-labelledby={title ? "modal-title" : undefined}
+          aria-labelledby={title ? 'modal-title' : undefined}
         >
           <button
             onClick={onClose}

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { signUpSchema, type SignUpFormData } from "@/lib/validations/auth";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { useState } from 'react';
+import { signUpSchema, type SignUpFormData } from '@/lib/validations/auth';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface SignUpFormProps {
   onSuccess?: () => void;
@@ -13,9 +13,9 @@ interface SignUpFormProps {
 
 export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
   const [formData, setFormData] = useState<SignUpFormData>({
-    email: "",
-    password: "",
-    confirmPassword: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof SignUpFormData, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -65,7 +65,7 @@ export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
 
       onSuccess?.();
     } catch {
-      setServerError("An unexpected error occurred. Please try again.");
+      setServerError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,10 @@ export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {serverError && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm" role="alert">
+        <div
+          className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"
+          role="alert"
+        >
           {serverError}
         </div>
       )}
@@ -118,7 +121,7 @@ export function SignUpForm({ onSuccess, onSwitchToLogin }: SignUpFormProps) {
 
       {onSwitchToLogin && (
         <p className="text-center text-sm text-zinc-400">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}

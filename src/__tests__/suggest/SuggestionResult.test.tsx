@@ -29,7 +29,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText('Test Game')).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText('15h to beat')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText('Action, Adventure')).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText(/This game perfectly matches/)).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByText('Pick This'));
@@ -101,7 +101,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByText('Reroll'));
@@ -117,7 +117,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={10}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText('10s')).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={5}
         isLoading={false}
-      />
+      />,
     );
 
     const rerollButton = screen.getByText('5s').closest('button');
@@ -146,7 +146,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={true}
-      />
+      />,
     );
 
     expect(screen.getByText('Pick This').closest('button')).toBeDisabled();
@@ -169,7 +169,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.queryByText(/to beat/)).not.toBeInTheDocument();
@@ -191,7 +191,7 @@ describe('SuggestionResult', () => {
         onReroll={mockOnReroll}
         cooldownRemaining={0}
         isLoading={false}
-      />
+      />,
     );
 
     expect(screen.getByText('Test Game')).toBeInTheDocument();

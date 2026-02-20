@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { useState } from 'react';
+import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -13,8 +13,8 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
   const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
 
       onSuccess?.();
     } catch {
-      setServerError("An unexpected error occurred. Please try again.");
+      setServerError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +73,10 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {serverError && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm" role="alert">
+        <div
+          className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"
+          role="alert"
+        >
           {serverError}
         </div>
       )}
@@ -106,7 +109,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
 
       {onSwitchToSignUp && (
         <p className="text-center text-sm text-zinc-400">
-          Don&apos;t have an account?{" "}
+          Don&apos;t have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToSignUp}

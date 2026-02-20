@@ -1,5 +1,5 @@
 export const VALID_STATUSES = ['backlog', 'playing', 'finished', 'dropped', 'hidden'] as const;
-export type GameStatus = typeof VALID_STATUSES[number];
+export type GameStatus = (typeof VALID_STATUSES)[number];
 
 export interface StatusUpdateInput {
   appId: unknown;

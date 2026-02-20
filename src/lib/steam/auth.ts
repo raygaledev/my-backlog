@@ -1,15 +1,9 @@
-import { RelyingParty } from "openid";
+import { RelyingParty } from 'openid';
 
-const STEAM_OPENID_URL = "https://steamcommunity.com/openid";
+const STEAM_OPENID_URL = 'https://steamcommunity.com/openid';
 
 export function createSteamRelyingParty(returnUrl: string): RelyingParty {
-  return new RelyingParty(
-    returnUrl,
-    null,
-    true,
-    true,
-    []
-  );
+  return new RelyingParty(returnUrl, null, true, true, []);
 }
 
 export function extractSteamId(claimedIdentifier: string): string | null {

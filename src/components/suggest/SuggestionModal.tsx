@@ -11,7 +11,12 @@ import { SuggestionError } from './SuggestionError';
 interface SuggestionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPick: (appId: number, name: string, headerImage: string | null, mainStoryHours: number | null) => void;
+  onPick: (
+    appId: number,
+    name: string,
+    headerImage: string | null,
+    mainStoryHours: number | null,
+  ) => void;
 }
 
 export function SuggestionModal({ isOpen, onClose, onPick }: SuggestionModalProps) {
@@ -68,7 +73,7 @@ export function SuggestionModal({ isOpen, onClose, onPick }: SuggestionModalProp
         suggestion.game.app_id,
         suggestion.game.name,
         suggestion.game.header_image,
-        suggestion.game.main_story_hours
+        suggestion.game.main_story_hours,
       );
       onClose();
     }
@@ -79,26 +84,23 @@ export function SuggestionModal({ isOpen, onClose, onPick }: SuggestionModalProp
   const isWizardStep = step === 'mood' || step === 'energy' || step === 'time';
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className='absolute inset-0 bg-black/80 backdrop-blur-sm'
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className='relative w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl'>
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl">
         {/* Close button */}
         <button
           onClick={onClose}
-          className='absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer z-10'
-          aria-label='Close'
+          className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer z-10"
+          aria-label="Close"
         >
-          <X className='w-5 h-5' />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Content */}
-        <div className='p-6'>
+        <div className="p-6">
           {isWizardStep && (
             <SuggestionWizard
               step={step}
@@ -111,9 +113,7 @@ export function SuggestionModal({ isOpen, onClose, onPick }: SuggestionModalProp
 
           {step === 'loading' && <SuggestionLoading />}
 
-          {step === 'result' && error && (
-            <SuggestionError error={error} onRetry={reset} />
-          )}
+          {step === 'result' && error && <SuggestionError error={error} onRetry={reset} />}
 
           {step === 'result' && suggestion && !error && (
             <SuggestionResult

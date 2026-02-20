@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { InputHTMLAttributes, forwardRef } from "react";
+import { InputHTMLAttributes, forwardRef } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,16 +8,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", label, error, id, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
+  ({ className = '', label, error, id, ...props }, ref) => {
+    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
     return (
       <div className="w-full">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="block text-sm font-medium text-zinc-300 mb-1.5"
-          >
+          <label htmlFor={inputId} className="block text-sm font-medium text-zinc-300 mb-1.5">
             {label}
           </label>
         )}
@@ -28,17 +25,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             w-full px-4 py-2.5 bg-zinc-800 border rounded-lg text-zinc-100
             placeholder:text-zinc-500 transition-colors
             focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
-            ${error ? "border-red-500" : "border-zinc-700 hover:border-zinc-600"}
+            ${error ? 'border-red-500' : 'border-zinc-700 hover:border-zinc-600'}
             ${className}
           `}
           {...props}
         />
         {error && (
-          <p className="mt-1.5 text-sm text-red-400" role="alert">{error}</p>
+          <p className="mt-1.5 text-sm text-red-400" role="alert">
+            {error}
+          </p>
         )}
       </div>
     );
-  }
+  },
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';

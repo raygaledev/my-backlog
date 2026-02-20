@@ -12,8 +12,8 @@ const FILTERS: GameFilter[] = ['all', 'backlog', 'finished', 'dropped', 'hidden'
 
 export function GamesFilter({ filter, counts, onFilterChange }: GamesFilterProps) {
   return (
-    <div className='flex gap-2 overflow-x-auto pb-2 -mb-2'>
-      {FILTERS.map(f => (
+    <div className="flex gap-2 overflow-x-auto pb-2 -mb-2">
+      {FILTERS.map((f) => (
         <button
           key={f}
           onClick={() => onFilterChange(f)}
@@ -24,7 +24,7 @@ export function GamesFilter({ filter, counts, onFilterChange }: GamesFilterProps
           }`}
         >
           {f.charAt(0).toUpperCase() + f.slice(1)}
-          <span className='ml-1.5 text-xs opacity-60'>{counts[f]}</span>
+          <span className="ml-1.5 text-xs opacity-60">{counts[f]}</span>
         </button>
       ))}
     </div>

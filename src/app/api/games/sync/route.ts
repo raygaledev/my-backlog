@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { getGameDetails, extractGameMetadata, getSteamReviewData } from "@/lib/steam/store-api";
-import { getMainStoryHours } from "@/lib/hltb/api";
-import { isMetadataFresh, calculateBayesianScore } from "@/lib/games/scoring";
-import { checkRateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { getGameDetails, extractGameMetadata, getSteamReviewData } from '@/lib/steam/store-api';
+import { getMainStoryHours } from '@/lib/hltb/api';
+import { isMetadataFresh, calculateBayesianScore } from '@/lib/games/scoring';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 interface GameMetadata {
   app_id: number;
@@ -22,49 +22,50 @@ interface GameMetadata {
 }
 
 export async function POST(request: NextRequest) {
-  // Rate limiting
-  const ip = getClientIp(request);
-  const rateLimitResult = checkRateLimit(`game-sync:${ip}`, RATE_LIMITS.gameSync);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limiting per user (not IP) so each user gets their own quota
+  const rateLimitResult = checkRateLimit(`game-sync:${user.id}`, RATE_LIMITS.gameSync);
 
   if (!rateLimitResult.success) {
     return NextResponse.json(
-      { error: "Too many requests" },
+      { error: 'Too many requests' },
       {
         status: 429,
         headers: {
-          "Retry-After": Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString(),
-          "X-RateLimit-Limit": rateLimitResult.limit.toString(),
-          "X-RateLimit-Remaining": "0",
+          'Retry-After': Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000).toString(),
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': '0',
         },
-      }
+      },
     );
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
   const { appId } = body;
 
-  if (!appId || typeof appId !== "number" || !Number.isInteger(appId) || appId <= 0) {
-    return NextResponse.json({ error: "Invalid appId" }, { status: 400 });
+  if (!appId || typeof appId !== 'number' || !Number.isInteger(appId) || appId <= 0) {
+    return NextResponse.json({ error: 'Invalid appId' }, { status: 400 });
   }
 
   // Check for existing fresh metadata in shared table
   const { data: existingMetadata } = await supabase
-    .from("game_metadata")
-    .select("*")
-    .eq("app_id", appId)
+    .from('game_metadata')
+    .select('*')
+    .eq('app_id', appId)
     .single();
 
   let metadata: GameMetadata | null = null;
@@ -112,16 +113,14 @@ export async function POST(request: NextRequest) {
       };
 
       // Upsert into shared game_metadata table
-      await supabase
-        .from("game_metadata")
-        .upsert(metadata, { onConflict: "app_id" });
+      await supabase.from('game_metadata').upsert(metadata, { onConflict: 'app_id' });
     }
   }
 
   if (metadata) {
     // Update user's game with metadata from shared table
     await supabase
-      .from("games")
+      .from('games')
       .update({
         type: metadata.type,
         genres: metadata.genres,
@@ -135,8 +134,8 @@ export async function POST(request: NextRequest) {
         main_story_hours: metadata.main_story_hours,
         metadata_synced: true,
       })
-      .eq("user_id", user.id)
-      .eq("app_id", appId);
+      .eq('user_id', user.id)
+      .eq('app_id', appId);
 
     return NextResponse.json({
       success: true,
@@ -152,15 +151,15 @@ export async function POST(request: NextRequest) {
         steam_review_score: metadata.steam_review_score,
         steam_review_count: metadata.steam_review_count,
         steam_review_weighted: metadata.steam_review_weighted,
-      }
+      },
     });
   } else {
     // Mark as synced even if no data (game might be removed from store)
     await supabase
-      .from("games")
+      .from('games')
       .update({ metadata_synced: true })
-      .eq("user_id", user.id)
-      .eq("app_id", appId);
+      .eq('user_id', user.id)
+      .eq('app_id', appId);
 
     return NextResponse.json({ success: true, fromCache: false, metadata: null });
   }

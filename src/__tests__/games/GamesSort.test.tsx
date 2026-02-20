@@ -10,7 +10,7 @@ describe('GamesSort', () => {
 
   describe('rendering', () => {
     it('should render with all sort options', () => {
-      render(<GamesSort value='playtime' onChange={mockOnChange} />);
+      render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       expect(screen.getByText('Most Played')).toBeInTheDocument();
       expect(screen.getByText('Highest Rated')).toBeInTheDocument();
@@ -18,13 +18,13 @@ describe('GamesSort', () => {
     });
 
     it('should display selected sort option', () => {
-      render(<GamesSort value='score' onChange={mockOnChange} />);
+      render(<GamesSort value="score" onChange={mockOnChange} />);
 
       expect(screen.getByRole('combobox')).toHaveValue('score');
     });
 
     it('should default to playtime sort', () => {
-      render(<GamesSort value='playtime' onChange={mockOnChange} />);
+      render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       expect(screen.getByRole('combobox')).toHaveValue('playtime');
     });
@@ -32,7 +32,7 @@ describe('GamesSort', () => {
 
   describe('interactions', () => {
     it('should call onChange when selecting Most Played', () => {
-      render(<GamesSort value='score' onChange={mockOnChange} />);
+      render(<GamesSort value="score" onChange={mockOnChange} />);
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'playtime' } });
 
@@ -40,7 +40,7 @@ describe('GamesSort', () => {
     });
 
     it('should call onChange when selecting Highest Rated', () => {
-      render(<GamesSort value='playtime' onChange={mockOnChange} />);
+      render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'score' } });
 
@@ -48,7 +48,7 @@ describe('GamesSort', () => {
     });
 
     it('should call onChange when selecting Most Recent', () => {
-      render(<GamesSort value='playtime' onChange={mockOnChange} />);
+      render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       fireEvent.change(screen.getByRole('combobox'), { target: { value: 'recent' } });
 

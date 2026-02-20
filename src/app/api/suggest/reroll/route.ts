@@ -3,32 +3,25 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { success: false, error: 'Invalid JSON' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
   }
 
   const { appId } = body as { appId?: number };
 
   if (!appId || typeof appId !== 'number' || !Number.isInteger(appId) || appId <= 0) {
-    return NextResponse.json(
-      { success: false, error: 'Invalid appId' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, error: 'Invalid appId' }, { status: 400 });
   }
 
   // Get current reroll count

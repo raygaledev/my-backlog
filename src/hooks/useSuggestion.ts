@@ -68,7 +68,7 @@ export function useSuggestion(): UseSuggestionReturn {
     }
 
     cooldownIntervalRef.current = setInterval(() => {
-      setCooldownRemaining(prev => {
+      setCooldownRemaining((prev) => {
         if (prev <= 1) {
           if (cooldownIntervalRef.current) {
             clearInterval(cooldownIntervalRef.current);
@@ -119,24 +119,27 @@ export function useSuggestion(): UseSuggestionReturn {
   }, []);
 
   const selectMood = useCallback((mood: MoodType) => {
-    setAnswers(prev => ({ ...prev, mood }));
+    setAnswers((prev) => ({ ...prev, mood }));
     setStep('energy');
   }, []);
 
   const selectEnergy = useCallback((energy: EnergyLevel) => {
-    setAnswers(prev => ({ ...prev, energy }));
+    setAnswers((prev) => ({ ...prev, energy }));
     setStep('time');
   }, []);
 
-  const selectTime = useCallback((time: TimeCommitment) => {
-    const newAnswers = { ...answers, time };
-    setAnswers(newAnswers);
+  const selectTime = useCallback(
+    (time: TimeCommitment) => {
+      const newAnswers = { ...answers, time };
+      setAnswers(newAnswers);
 
-    // All answers collected, fetch suggestion
-    if (newAnswers.mood && newAnswers.energy && newAnswers.time) {
-      fetchSuggestion(newAnswers as SuggestionPreferences);
-    }
-  }, [answers, fetchSuggestion]);
+      // All answers collected, fetch suggestion
+      if (newAnswers.mood && newAnswers.energy && newAnswers.time) {
+        fetchSuggestion(newAnswers as SuggestionPreferences);
+      }
+    },
+    [answers, fetchSuggestion],
+  );
 
   const goBack = useCallback(() => {
     if (step === 'energy') {

@@ -16,15 +16,15 @@ const SORT_OPTIONS: { value: GameSort; label: string }[] = [
 
 export function GamesSort({ value, onChange }: GamesSortProps) {
   return (
-    <div className='flex items-center gap-2'>
-      <ArrowUpDown className='w-4 h-4 text-zinc-500' />
+    <div className="flex items-center gap-2">
+      <ArrowUpDown className="w-4 h-4 text-zinc-500" />
       <select
         value={value}
-        onChange={e => onChange(e.target.value as GameSort)}
-        className='appearance-none bg-transparent text-zinc-400 text-sm focus:outline-none cursor-pointer hover:text-zinc-200 transition-colors'
+        onChange={(e) => onChange(e.target.value as GameSort)}
+        className="appearance-none bg-transparent text-zinc-400 text-sm focus:outline-none cursor-pointer hover:text-zinc-200 transition-colors"
       >
-        {SORT_OPTIONS.map(option => (
-          <option key={option.value} value={option.value} className='bg-zinc-900'>
+        {SORT_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value} className="bg-zinc-900">
             {option.label}
           </option>
         ))}

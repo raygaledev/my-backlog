@@ -65,36 +65,44 @@ export function useGameLibrary(): UseGameLibraryReturn {
 
   // Deduplicate highly rated games - exclude games shown in other carousels
   const excludedAppIds = new Set([
-    ...shortGames.map(g => g.app_id),
-    ...weekendGames.map(g => g.app_id),
+    ...shortGames.map((g) => g.app_id),
+    ...weekendGames.map((g) => g.app_id),
   ]);
   const highlyRatedGames = highlyRatedGamesPool
-    .filter(g => !excludedAppIds.has(g.app_id))
+    .filter((g) => !excludedAppIds.has(g.app_id))
     .slice(0, 10);
 
   const syncGames = useCallback(async (games: Game[]) => {
     const BATCH_SIZE = 3;
     let completed = 0;
 
+    const syncOne = async (game: Game): Promise<void> => {
+      let attempts = 0;
+      while (attempts < 5) {
+        try {
+          const response = await fetch('/api/games/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appId: game.app_id }),
+          });
+          if (response.status === 429) {
+            const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10);
+            await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+            attempts++;
+            continue;
+          }
+        } catch (err) {
+          console.error(`Failed to sync ${game.name}:`, err);
+        }
+        break;
+      }
+      completed++;
+      setSyncProgress({ current: completed, total: games.length });
+    };
+
     for (let i = 0; i < games.length; i += BATCH_SIZE) {
       const batch = games.slice(i, i + BATCH_SIZE);
-
-      await Promise.all(
-        batch.map(async game => {
-          try {
-            await fetch('/api/games/sync', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ appId: game.app_id }),
-            });
-          } catch (err) {
-            console.error(`Failed to sync ${game.name}:`, err);
-          } finally {
-            completed++;
-            setSyncProgress({ current: completed, total: games.length });
-          }
-        }),
-      );
+      await Promise.all(batch.map(syncOne));
     }
   }, []);
 
@@ -108,9 +116,9 @@ export function useGameLibrary(): UseGameLibraryReturn {
         body: JSON.stringify({ appId: game.app_id, status: 'playing' }),
       });
       setCurrentlyPlaying(game);
-      setShortGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
-      setWeekendGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
-      setHighlyRatedGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
+      setShortGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
+      setWeekendGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
+      setHighlyRatedGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
     } catch (err) {
       console.error('Failed to pick game:', err);
     }
@@ -166,9 +174,9 @@ export function useGameLibrary(): UseGameLibraryReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appId: game.app_id, status: 'hidden' }),
       });
-      setShortGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
-      setWeekendGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
-      setHighlyRatedGamesPool(prev => prev.filter(g => g.app_id !== game.app_id));
+      setShortGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
+      setWeekendGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
+      setHighlyRatedGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
     } catch (err) {
       console.error('Failed to hide game:', err);
     }
@@ -187,9 +195,9 @@ export function useGameLibrary(): UseGameLibraryReturn {
         }),
       });
       if (currentlyPlaying.main_story_hours <= 5) {
-        setShortGamesPool(prev => [...prev, currentlyPlaying]);
+        setShortGamesPool((prev) => [...prev, currentlyPlaying]);
       } else if (currentlyPlaying.main_story_hours <= 12) {
-        setWeekendGamesPool(prev => [...prev, currentlyPlaying]);
+        setWeekendGamesPool((prev) => [...prev, currentlyPlaying]);
       }
       setCurrentlyPlaying(null);
     } catch (err) {
@@ -267,7 +275,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
             .eq('user_id', user.id)
             .or('metadata_synced.is.null,metadata_synced.eq.false');
 
-          const unsyncedGames = allUnsyncedGames?.filter(g => {
+          const unsyncedGames = allUnsyncedGames?.filter((g) => {
             if (g.type && g.type !== 'game') return false;
             if (g.categories && !g.categories.includes('Single-player')) return false;
             return true;

@@ -24,27 +24,36 @@ function formatGameForPrompt(game: GameForSuggestion): string {
     `"${game.name}" (ID: ${game.app_id})`,
     game.genres?.length ? `Genres: ${game.genres.join(', ')}` : null,
     game.main_story_hours ? `Length: ${game.main_story_hours}h` : null,
-    game.playtime_forever > 0 ? `Already played: ${Math.round(game.playtime_forever / 60)}h` : 'Never played',
+    game.playtime_forever > 0
+      ? `Already played: ${Math.round(game.playtime_forever / 60)}h`
+      : 'Never played',
     game.steam_review_weighted ? `Rating: ${game.steam_review_weighted}%` : null,
-    game.reroll_count > 0 ? `(Skipped ${game.reroll_count} time${game.reroll_count > 1 ? 's' : ''} before)` : null,
+    game.reroll_count > 0
+      ? `(Skipped ${game.reroll_count} time${game.reroll_count > 1 ? 's' : ''} before)`
+      : null,
   ].filter(Boolean);
 
   return parts.join(' | ');
 }
 
 export function buildSuggestionPrompt(context: SuggestionContext): string {
-  const { preferences, backlogGames, finishedGames, droppedGames, excludeAppIds, previousReasonings } = context;
+  const {
+    preferences,
+    backlogGames,
+    finishedGames,
+    droppedGames,
+    excludeAppIds,
+    previousReasonings,
+  } = context;
 
   // Filter out excluded games
-  const eligibleGames = backlogGames.filter(g => !excludeAppIds.includes(g.app_id));
+  const eligibleGames = backlogGames.filter((g) => !excludeAppIds.includes(g.app_id));
 
   if (eligibleGames.length === 0) {
     throw new Error('No eligible games to suggest');
   }
 
-  const gamesListFormatted = eligibleGames
-    .map(formatGameForPrompt)
-    .join('\n');
+  const gamesListFormatted = eligibleGames.map(formatGameForPrompt).join('\n');
 
   const prompt = `You are a game recommendation assistant helping a user pick their next game from their Steam backlog.
 
@@ -77,11 +86,15 @@ Pick ONE game from the backlog that best matches the current mood, energy, and t
 - Match the mood/genre appropriately
 
 IMPORTANT: Write the reasoning in second person, speaking directly to the user (use "you/your", not "the user/their"). Reference their history when relevant (e.g., "Since you finished X, you might enjoy this similar game...").
-${previousReasonings.length > 0 ? `
+${
+  previousReasonings.length > 0
+    ? `
 AVOID REPETITION: The user has rerolled. Here are your previous suggestions - do NOT repeat the same reasoning patterns or reference the same games from their history:
 ${previousReasonings.map((r, i) => `${i + 1}. "${r}"`).join('\n')}
 
-Use DIFFERENT examples from their history and vary your reasoning style.` : ''}
+Use DIFFERENT examples from their history and vary your reasoning style.`
+    : ''
+}
 
 Respond with ONLY valid JSON in this exact format:
 {

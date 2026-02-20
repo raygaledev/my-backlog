@@ -36,7 +36,7 @@ describe('LandingPage', () => {
       render(<LandingPage user={null} onConnectSteam={mockOnConnectSteam} />);
 
       expect(
-        screen.getByText(/Connect your Steam library and let us pick your next game/)
+        screen.getByText(/Connect your Steam library and let us pick your next game/),
       ).toBeInTheDocument();
     });
 

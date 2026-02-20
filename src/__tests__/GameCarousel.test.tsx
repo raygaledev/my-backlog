@@ -99,7 +99,9 @@ describe('GameCarousel', () => {
       const rightButton = screen.getByLabelText('Scroll right');
 
       // Mock scrollBy on the container
-      const scrollContainer = rightButton.closest('div')?.parentElement?.querySelector('[style*="scrollbar"]')?.parentElement;
+      const scrollContainer = rightButton
+        .closest('div')
+        ?.parentElement?.querySelector('[style*="scrollbar"]')?.parentElement;
       if (scrollContainer) {
         const scrollBySpy = jest.fn();
         scrollContainer.scrollBy = scrollBySpy;
@@ -114,13 +116,7 @@ describe('GameCarousel', () => {
   describe('game actions', () => {
     it('should show Pick button when onPickGame is provided', () => {
       const mockPick = jest.fn();
-      render(
-        <GameCarousel
-          title="Test"
-          games={mockGames}
-          onPickGame={mockPick}
-        />
-      );
+      render(<GameCarousel title="Test" games={mockGames} onPickGame={mockPick} />);
 
       const pickButtons = screen.getAllByText('Pick');
       expect(pickButtons.length).toBeGreaterThan(0);
@@ -128,13 +124,7 @@ describe('GameCarousel', () => {
 
     it('should show Hide button when onHideGame is provided', () => {
       const mockHide = jest.fn();
-      render(
-        <GameCarousel
-          title="Test"
-          games={mockGames}
-          onHideGame={mockHide}
-        />
-      );
+      render(<GameCarousel title="Test" games={mockGames} onHideGame={mockHide} />);
 
       const hideButtons = screen.getAllByText('Hide');
       expect(hideButtons.length).toBeGreaterThan(0);
@@ -149,13 +139,7 @@ describe('GameCarousel', () => {
 
     it('should call onPickGame with correct game when Pick is clicked', () => {
       const mockPick = jest.fn();
-      render(
-        <GameCarousel
-          title="Test"
-          games={mockGames}
-          onPickGame={mockPick}
-        />
-      );
+      render(<GameCarousel title="Test" games={mockGames} onPickGame={mockPick} />);
 
       const pickButtons = screen.getAllByText('Pick');
       fireEvent.click(pickButtons[0]);
@@ -165,13 +149,7 @@ describe('GameCarousel', () => {
 
     it('should call onHideGame with correct game when Hide is clicked', () => {
       const mockHide = jest.fn();
-      render(
-        <GameCarousel
-          title="Test"
-          games={mockGames}
-          onHideGame={mockHide}
-        />
-      );
+      render(<GameCarousel title="Test" games={mockGames} onHideGame={mockHide} />);
 
       const hideButtons = screen.getAllByText('Hide');
       fireEvent.click(hideButtons[1]);
@@ -183,12 +161,7 @@ describe('GameCarousel', () => {
       const mockPick = jest.fn();
       const mockHide = jest.fn();
       render(
-        <GameCarousel
-          title="Test"
-          games={mockGames}
-          onPickGame={mockPick}
-          onHideGame={mockHide}
-        />
+        <GameCarousel title="Test" games={mockGames} onPickGame={mockPick} onHideGame={mockHide} />,
       );
 
       // Each game should have both buttons

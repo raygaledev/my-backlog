@@ -21,10 +21,7 @@ export function isMetadataFresh(syncedAt: string): boolean {
  */
 export function calculateBayesianScore(score: number, count: number): number {
   const m = 100; // Minimum reviews needed for confidence
-  const C = 70;  // Global average score
+  const C = 70; // Global average score
 
-  return Math.round(
-    (count / (count + m)) * score +
-    (m / (count + m)) * C
-  );
+  return Math.round((count / (count + m)) * score + (m / (count + m)) * C);
 }

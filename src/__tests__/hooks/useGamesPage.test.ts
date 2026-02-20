@@ -7,11 +7,11 @@ function filterAndSortGames(
   games: GameItem[],
   filter: GameFilter,
   searchQuery: string,
-  sort: GameSort = 'playtime'
+  sort: GameSort = 'playtime',
 ): GameItem[] {
   const searchLower = searchQuery.toLowerCase();
 
-  const filtered = games.filter(game => {
+  const filtered = games.filter((game) => {
     // Status filter
     if (filter === 'all' && game.status === 'hidden') return false;
     if (filter === 'backlog' && game.status && game.status !== 'backlog') return false;
@@ -38,11 +38,7 @@ function filterAndSortGames(
   });
 }
 
-function filterGames(
-  games: GameItem[],
-  filter: GameFilter,
-  searchQuery: string
-): GameItem[] {
+function filterGames(games: GameItem[], filter: GameFilter, searchQuery: string): GameItem[] {
   return filterAndSortGames(games, filter, searchQuery, 'playtime');
 }
 
@@ -160,7 +156,7 @@ describe('useGamesPage filtering logic', () => {
       ];
       const result = filterGames(gamesWithNull, 'backlog', '');
 
-      expect(result.map(g => g.name)).toContain('New Game');
+      expect(result.map((g) => g.name)).toContain('New Game');
     });
 
     it('should filter by finished status', () => {
@@ -181,14 +177,14 @@ describe('useGamesPage filtering logic', () => {
       const result = filterGames(sampleGames, 'all', '');
 
       expect(result).toHaveLength(4);
-      expect(result.map(g => g.name)).not.toContain('Hidden Gem');
+      expect(result.map((g) => g.name)).not.toContain('Hidden Gem');
     });
   });
 
   describe('performance considerations', () => {
     it('should handle large lists efficiently', () => {
       const largeList = Array.from({ length: 1000 }, (_, i) =>
-        createGame({ app_id: i, name: `Game ${i}`, status: 'backlog' })
+        createGame({ app_id: i, name: `Game ${i}`, status: 'backlog' }),
       );
 
       const start = performance.now();
@@ -201,7 +197,7 @@ describe('useGamesPage filtering logic', () => {
 
     it('should handle empty search efficiently', () => {
       const largeList = Array.from({ length: 1000 }, (_, i) =>
-        createGame({ app_id: i, name: `Game ${i}`, status: 'backlog' })
+        createGame({ app_id: i, name: `Game ${i}`, status: 'backlog' }),
       );
 
       const start = performance.now();
@@ -215,9 +211,27 @@ describe('useGamesPage filtering logic', () => {
 
   describe('sorting', () => {
     const gamesForSorting: GameItem[] = [
-      createGame({ app_id: 1, name: 'Game A', playtime_forever: 100, steam_review_weighted: 70, status: 'backlog' }),
-      createGame({ app_id: 3, name: 'Game B', playtime_forever: 300, steam_review_weighted: 90, status: 'backlog' }),
-      createGame({ app_id: 2, name: 'Game C', playtime_forever: 200, steam_review_weighted: 80, status: 'backlog' }),
+      createGame({
+        app_id: 1,
+        name: 'Game A',
+        playtime_forever: 100,
+        steam_review_weighted: 70,
+        status: 'backlog',
+      }),
+      createGame({
+        app_id: 3,
+        name: 'Game B',
+        playtime_forever: 300,
+        steam_review_weighted: 90,
+        status: 'backlog',
+      }),
+      createGame({
+        app_id: 2,
+        name: 'Game C',
+        playtime_forever: 200,
+        steam_review_weighted: 80,
+        status: 'backlog',
+      }),
     ];
 
     it('should sort by playtime (descending) by default', () => {

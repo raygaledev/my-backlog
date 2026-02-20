@@ -10,34 +10,19 @@ describe('GamesSearch', () => {
 
   describe('rendering', () => {
     it('should render search input with placeholder', () => {
-      render(
-        <GamesSearch
-          value=''
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      render(<GamesSearch value="" onSearchChange={mockOnSearchChange} />);
 
       expect(screen.getByPlaceholderText('Search games...')).toBeInTheDocument();
     });
 
     it('should render with the provided value', () => {
-      render(
-        <GamesSearch
-          value='zelda'
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      render(<GamesSearch value="zelda" onSearchChange={mockOnSearchChange} />);
 
       expect(screen.getByDisplayValue('zelda')).toBeInTheDocument();
     });
 
     it('should render search icon', () => {
-      const { container } = render(
-        <GamesSearch
-          value=''
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      const { container } = render(<GamesSearch value="" onSearchChange={mockOnSearchChange} />);
 
       const svgIcon = container.querySelector('svg');
       expect(svgIcon).toBeInTheDocument();
@@ -46,12 +31,7 @@ describe('GamesSearch', () => {
 
   describe('interactions', () => {
     it('should call onSearchChange when typing', () => {
-      render(
-        <GamesSearch
-          value=''
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      render(<GamesSearch value="" onSearchChange={mockOnSearchChange} />);
 
       const input = screen.getByPlaceholderText('Search games...');
       fireEvent.change(input, { target: { value: 'mario' } });
@@ -60,12 +40,7 @@ describe('GamesSearch', () => {
     });
 
     it('should call onSearchChange on each keystroke', () => {
-      render(
-        <GamesSearch
-          value=''
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      render(<GamesSearch value="" onSearchChange={mockOnSearchChange} />);
 
       const input = screen.getByPlaceholderText('Search games...');
 
@@ -80,12 +55,7 @@ describe('GamesSearch', () => {
     });
 
     it('should call onSearchChange with empty string when cleared', () => {
-      render(
-        <GamesSearch
-          value='test'
-          onSearchChange={mockOnSearchChange}
-        />
-      );
+      render(<GamesSearch value="test" onSearchChange={mockOnSearchChange} />);
 
       const input = screen.getByPlaceholderText('Search games...');
       fireEvent.change(input, { target: { value: '' } });

@@ -80,14 +80,18 @@ describe('isShortGameEligible', () => {
 
   describe('category validation', () => {
     it('should return false for multiplayer-only games', () => {
-      expect(isShortGameEligible({ ...baseEligibleGame, categories: ['Multi-player'] })).toBe(false);
+      expect(isShortGameEligible({ ...baseEligibleGame, categories: ['Multi-player'] })).toBe(
+        false,
+      );
     });
 
     it('should return true for games with both single and multiplayer', () => {
-      expect(isShortGameEligible({
-        ...baseEligibleGame,
-        categories: ['Single-player', 'Multi-player'],
-      })).toBe(true);
+      expect(
+        isShortGameEligible({
+          ...baseEligibleGame,
+          categories: ['Single-player', 'Multi-player'],
+        }),
+      ).toBe(true);
     });
 
     it('should return false for games with null categories', () => {
@@ -191,7 +195,9 @@ describe('isWeekendGameEligible', () => {
 
   describe('category validation', () => {
     it('should return false for multiplayer-only games', () => {
-      expect(isWeekendGameEligible({ ...baseEligibleGame, categories: ['Multi-player'] })).toBe(false);
+      expect(isWeekendGameEligible({ ...baseEligibleGame, categories: ['Multi-player'] })).toBe(
+        false,
+      );
     });
   });
 

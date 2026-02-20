@@ -27,10 +27,7 @@ export interface RateLimitResult {
   resetAt: number;
 }
 
-export function checkRateLimit(
-  identifier: string,
-  config: RateLimitConfig
-): RateLimitResult {
+export function checkRateLimit(identifier: string, config: RateLimitConfig): RateLimitResult {
   const now = Date.now();
   const key = identifier;
   const entry = rateLimitStore.get(key);
@@ -70,31 +67,31 @@ export function checkRateLimit(
 
 export function getClientIp(request: Request): string {
   // Check common proxy headers
-  const forwarded = request.headers.get("x-forwarded-for");
+  const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(",")[0].trim();
+    return forwarded.split(',')[0].trim();
   }
 
-  const realIp = request.headers.get("x-real-ip");
+  const realIp = request.headers.get('x-real-ip');
   if (realIp) {
     return realIp;
   }
 
   // Fallback for Vercel
-  const vercelIp = request.headers.get("x-vercel-forwarded-for");
+  const vercelIp = request.headers.get('x-vercel-forwarded-for');
   if (vercelIp) {
-    return vercelIp.split(",")[0].trim();
+    return vercelIp.split(',')[0].trim();
   }
 
-  return "unknown";
+  return 'unknown';
 }
 
 // Pre-configured rate limiters
 export const RATE_LIMITS = {
   // 60 requests per minute for game status updates
   gameStatus: { limit: 60, windowMs: 60 * 1000 },
-  // 10 requests per minute for sync operations
-  gameSync: { limit: 10, windowMs: 60 * 1000 },
+  // 60 requests per minute for sync operations (per user)
+  gameSync: { limit: 60, windowMs: 60 * 1000 },
   // 10 requests per hour for Steam refresh
   steamRefresh: { limit: 10, windowMs: 60 * 60 * 1000 },
   // 20 requests per minute for AI suggestions (accounts for rerolls)
