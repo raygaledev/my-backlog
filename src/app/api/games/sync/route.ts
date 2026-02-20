@@ -7,6 +7,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 interface GameMetadata {
   app_id: number;
+  platform: string;
   type: string | null;
   name: string | null;
   genres: string[] | null;
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
 
       metadata = {
         app_id: appId,
+        platform: 'PC',
         type: extractedMetadata.type,
         name: details?.data?.name ?? null,
         genres: extractedMetadata.genres,
@@ -122,6 +124,7 @@ export async function POST(request: NextRequest) {
     await supabase
       .from('games')
       .update({
+        platform: metadata.platform,
         type: metadata.type,
         genres: metadata.genres,
         categories: metadata.categories,
