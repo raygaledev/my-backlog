@@ -58,7 +58,7 @@ export default function GamesPage() {
       <div className="min-h-screen bg-zinc-950">
         <Header />
         <div className="pt-24">
-          <div className="max-w-6xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-6">
             <GamesLoadingSkeleton />
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function GamesPage() {
       <Header />
 
       <main className="pt-24 pb-12">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col gap-4 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="shrink-0">

@@ -69,7 +69,7 @@ export function Header({ hideGamesLink }: HeaderProps = {}) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-fuchsia-500 rounded-lg" />

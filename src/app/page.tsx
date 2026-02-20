@@ -35,7 +35,7 @@ function LoadingState() {
 
 function CarouselsLoadingState() {
   return (
-    <section className="max-w-6xl mx-auto px-6 pb-24 space-y-24">
+    <section className="max-w-7xl mx-auto px-6 pb-24 space-y-24">
       {[1, 2].map((i) => (
         <div key={i} className="space-y-6">
           <div className="h-8 w-64 bg-zinc-800 rounded animate-pulse" />
@@ -166,7 +166,7 @@ function HomeContent() {
       <Header hideGamesLink={isSyncing || carouselsLoading} />
 
       <main className="pt-16 flex-1">
-        <section className="max-w-6xl mx-auto px-6 py-12">
+        <section className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex flex-col items-center text-center">
             {/* Profile bar */}
             <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-zinc-800 rounded-lg mb-8">
@@ -238,7 +238,7 @@ function HomeContent() {
         {!isSyncing &&
           !carouselsLoading &&
           (shortGames.length > 0 || weekendGames.length > 0 || highlyRatedGames.length > 0) && (
-            <section className="max-w-6xl mx-auto px-6 pb-24 space-y-16">
+            <section className="max-w-7xl mx-auto px-6 pb-24 space-y-16">
               {shortGames.length > 0 && (
                 <GameCarousel
                   title="Top-Rated Games Under 5 Hours"
@@ -268,7 +268,7 @@ function HomeContent() {
       </main>
 
       <footer className="py-6 border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-sm text-zinc-500">MyBacklog</p>
         </div>
       </footer>
