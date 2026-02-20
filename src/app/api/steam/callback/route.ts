@@ -13,7 +13,6 @@ function constantTimeCompare(a: string, b: string): boolean {
 
 export async function GET(request: NextRequest) {
   const baseUrl = request.nextUrl.origin;
-  const returnUrl = `${baseUrl}/api/steam/callback`;
 
   // Validate CSRF state
   const cookieState = request.cookies.get('steam_auth_state')?.value;
@@ -25,7 +24,9 @@ export async function GET(request: NextRequest) {
     return response;
   }
 
-  const relyingParty = createSteamRelyingParty(returnUrl);
+  // Reconstruct the exact returnUrl used during auth (with state) so OpenID verification passes
+  const returnUrlWithState = `${baseUrl}/api/steam/callback?state=${urlState}`;
+  const relyingParty = createSteamRelyingParty(returnUrlWithState);
 
   return new Promise<NextResponse>((resolve) => {
     relyingParty.verifyAssertion(request.url, async (error, result) => {

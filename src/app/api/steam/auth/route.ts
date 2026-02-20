@@ -4,10 +4,10 @@ import { randomBytes } from 'crypto';
 
 export async function GET(request: NextRequest) {
   const baseUrl = request.nextUrl.origin;
-  const returnUrl = `${baseUrl}/api/steam/callback`;
 
-  // Generate CSRF state token
+  // Generate CSRF state token and embed it in the return URL so Steam carries it back
   const state = randomBytes(32).toString('hex');
+  const returnUrl = `${baseUrl}/api/steam/callback?state=${state}`;
 
   const relyingParty = createSteamRelyingParty(returnUrl);
 
@@ -18,11 +18,7 @@ export async function GET(request: NextRequest) {
         return;
       }
 
-      // Append state to the auth URL
-      const urlWithState = new URL(authUrl);
-      urlWithState.searchParams.set('state', state);
-
-      const response = NextResponse.redirect(urlWithState.toString());
+      const response = NextResponse.redirect(authUrl);
 
       // Set state in HTTP-only cookie (5 minute TTL)
       response.cookies.set('steam_auth_state', state, {
