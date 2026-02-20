@@ -90,8 +90,8 @@ export function getClientIp(request: Request): string {
 export const RATE_LIMITS = {
   // 60 requests per minute for game status updates
   gameStatus: { limit: 60, windowMs: 60 * 1000 },
-  // 60 requests per minute for sync operations (per user)
-  gameSync: { limit: 60, windowMs: 60 * 1000 },
+  // 500 requests per minute for sync operations (per user) — scoped per user so no abuse concern
+  gameSync: { limit: 500, windowMs: 60 * 1000 },
   // 10 requests per hour for Steam refresh
   steamRefresh: { limit: 10, windowMs: 60 * 60 * 1000 },
   // 20 requests per minute for AI suggestions (accounts for rerolls)

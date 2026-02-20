@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { appId } = body;
+  const { appId, name: libraryName } = body;
 
   if (!appId || typeof appId !== 'number' || !Number.isInteger(appId) || appId <= 0) {
     return NextResponse.json({ error: 'Invalid appId' }, { status: 400 });
@@ -72,7 +72,12 @@ export async function POST(request: NextRequest) {
   let metadata: GameMetadata | null = null;
   let fromCache = false;
 
-  if (existingMetadata && isMetadataFresh(existingMetadata.synced_at)) {
+  const cacheIsUsable =
+    existingMetadata &&
+    isMetadataFresh(existingMetadata.synced_at) &&
+    (existingMetadata.type !== 'game' || existingMetadata.main_story_hours !== null);
+
+  if (cacheIsUsable) {
     // Use cached metadata
     metadata = existingMetadata as GameMetadata;
     fromCache = true;
@@ -87,7 +92,7 @@ export async function POST(request: NextRequest) {
       // Only fetch HLTB and Steam reviews for actual games
       const [mainStoryHours, steamReviewData] = isGame
         ? await Promise.all([
-            details?.data?.name ? getMainStoryHours(details.data.name) : null,
+            getMainStoryHours(libraryName || details?.data?.name || ''),
             getSteamReviewData(appId),
           ])
         : [null, null];

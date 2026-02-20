@@ -83,10 +83,13 @@ export function useGameLibrary(): UseGameLibraryReturn {
           const response = await fetch('/api/games/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appId: game.app_id }),
+            body: JSON.stringify({ appId: game.app_id, name: game.name }),
           });
           if (response.status === 429) {
-            const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10);
+            const retryAfter = Math.min(
+              parseInt(response.headers.get('Retry-After') ?? '10', 10),
+              15,
+            );
             await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
             attempts++;
             continue;
