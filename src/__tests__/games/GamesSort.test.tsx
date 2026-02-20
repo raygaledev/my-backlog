@@ -46,7 +46,9 @@ describe('GamesSort', () => {
       render(<GamesSort value="score" onChange={mockOnChange} />);
 
       fireEvent.click(screen.getByRole('button', { name: /Highest Rated/i }));
-      fireEvent.click(screen.getByRole('option', { name: /Most Played/i }).querySelector('button')!);
+      fireEvent.click(
+        screen.getByRole('option', { name: /Most Played/i }).querySelector('button')!,
+      );
 
       expect(mockOnChange).toHaveBeenCalledWith('playtime');
     });
@@ -55,7 +57,9 @@ describe('GamesSort', () => {
       render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       fireEvent.click(screen.getByRole('button', { name: /Most Played/i }));
-      fireEvent.click(screen.getByRole('option', { name: /Highest Rated/i }).querySelector('button')!);
+      fireEvent.click(
+        screen.getByRole('option', { name: /Highest Rated/i }).querySelector('button')!,
+      );
 
       expect(mockOnChange).toHaveBeenCalledWith('score');
     });
@@ -64,7 +68,9 @@ describe('GamesSort', () => {
       render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       fireEvent.click(screen.getByRole('button', { name: /Most Played/i }));
-      fireEvent.click(screen.getByRole('option', { name: /Most Recent/i }).querySelector('button')!);
+      fireEvent.click(
+        screen.getByRole('option', { name: /Most Recent/i }).querySelector('button')!,
+      );
 
       expect(mockOnChange).toHaveBeenCalledWith('recent');
     });
@@ -73,7 +79,9 @@ describe('GamesSort', () => {
       render(<GamesSort value="playtime" onChange={mockOnChange} />);
 
       fireEvent.click(screen.getByRole('button', { name: /Most Played/i }));
-      fireEvent.click(screen.getByRole('option', { name: /Most Recent/i }).querySelector('button')!);
+      fireEvent.click(
+        screen.getByRole('option', { name: /Most Recent/i }).querySelector('button')!,
+      );
 
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     });

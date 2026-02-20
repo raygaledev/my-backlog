@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Play, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, EyeOff, ExternalLink } from 'lucide-react';
 
 interface Game {
   app_id: number;
@@ -135,7 +135,15 @@ export function GameCarousel({ title, games, onPickGame, onHideGame }: GameCarou
                 )}
               </div>
               <div className="p-4">
-                <h3 className="text-zinc-100 font-medium truncate">{game.name}</h3>
+                <a
+                  href={`https://store.steampowered.com/app/${game.app_id}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/title flex items-center gap-1 text-zinc-200 font-medium hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="truncate min-w-0">{game.name}</span>
+                  <ExternalLink className="w-3 h-3 shrink-0 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+                </a>
                 {game.main_story_hours && (
                   <p className="text-zinc-500 text-sm mt-1">{game.main_story_hours}h to complete</p>
                 )}

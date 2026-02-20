@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import Image from 'next/image';
-import { Clock, Gamepad2, Star, Undo2, Check, X, EyeOff } from 'lucide-react';
+import { Clock, Gamepad2, Star, Undo2, Check, X, EyeOff, ExternalLink } from 'lucide-react';
 import type { GameItem } from '@/hooks/useGamesPage';
 
 interface GameCardProps {
@@ -103,9 +103,16 @@ export const GameCard = memo(function GameCard({ game, onStatusChange }: GameCar
       </div>
 
       <div className="p-3">
-        <h3 className="text-zinc-100 font-medium text-sm truncate" title={game.name}>
-          {game.name}
-        </h3>
+        <a
+          href={`https://store.steampowered.com/app/${game.app_id}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={game.name}
+          className="group/title flex items-center gap-1 text-zinc-200 font-medium text-sm hover:text-white transition-colors cursor-pointer"
+        >
+          <span className="truncate min-w-0">{game.name}</span>
+          <ExternalLink className="w-3 h-3 shrink-0 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+        </a>
         <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
           {game.main_story_hours && (
             <span className="flex items-center gap-1" title="Time to beat">

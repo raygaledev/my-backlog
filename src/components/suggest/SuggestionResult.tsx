@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Gamepad2, RotateCcw, Clock, Sparkles } from 'lucide-react';
+import { Gamepad2, RotateCcw, Clock, Sparkles, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { SuggestionResult as SuggestionResultType } from '@/lib/suggest/types';
 
@@ -49,7 +49,15 @@ export function SuggestionResult({
         </div>
 
         <div className="p-5">
-          <h3 className="text-xl font-semibold text-zinc-100 mb-1">{game.name}</h3>
+          <a
+            href={`https://store.steampowered.com/app/${game.app_id}/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group/title inline-flex items-center gap-1.5 text-xl font-semibold text-zinc-100 mb-1 hover:text-white transition-colors cursor-pointer"
+          >
+            {game.name}
+            <ExternalLink className="w-4 h-4 shrink-0 opacity-0 group-hover/title:opacity-100 transition-opacity" />
+          </a>
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 mb-4">
             {game.main_story_hours && (
