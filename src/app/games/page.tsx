@@ -11,7 +11,7 @@ import { useGamesPage } from '@/hooks/useGamesPage';
 
 function GamesLoadingSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {[...Array(10)].map((_, i) => (
         <div key={i} className="bg-zinc-900 rounded-lg overflow-hidden animate-pulse">
           <div className="h-40 sm:h-28 bg-zinc-800" />
@@ -57,8 +57,8 @@ export default function GamesPage() {
     return (
       <div className="min-h-screen bg-zinc-950">
         <Header />
-        <div className="pt-24 px-6">
-          <div className="max-w-6xl mx-auto">
+        <div className="pt-24">
+          <div className="max-w-6xl mx-auto px-6">
             <GamesLoadingSkeleton />
           </div>
         </div>
@@ -70,8 +70,8 @@ export default function GamesPage() {
     <div className="min-h-screen bg-zinc-950">
       <Header />
 
-      <main className="pt-24 pb-12 px-6">
-        <div className="max-w-6xl mx-auto">
+      <main className="pt-24 pb-12">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col gap-4 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="shrink-0">
@@ -91,7 +91,7 @@ export default function GamesPage() {
           {filteredGames.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredGames.map((game) => (
                 <GameCard
                   key={game.app_id}
