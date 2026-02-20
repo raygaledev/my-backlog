@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { appId, status } = body;
+  const { appId, status, finishedAt, droppedAt, notes, rating } = body;
 
   if (!appId || typeof appId !== 'number' || !Number.isInteger(appId) || appId <= 0) {
     return NextResponse.json({ error: 'Invalid appId' }, { status: 400 });
@@ -52,6 +52,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
+  if (rating !== undefined && rating !== null) {
+    if (!Number.isInteger(rating) || rating < 0 || rating > 10) {
+      return NextResponse.json({ error: 'Invalid rating' }, { status: 400 });
+    }
+  }
+
   // If setting to "playing", first clear any other "playing" games
   if (status === 'playing') {
     await supabase
@@ -61,10 +67,36 @@ export async function POST(request: NextRequest) {
       .eq('status', 'playing');
   }
 
+  // Build update payload based on status
+  type GameUpdate = {
+    status: string;
+    started_at?: string | null;
+    finished_at?: string | null;
+    dropped_at?: string | null;
+    notes?: string | null;
+    rating?: number | null;
+  };
+
+  const updatePayload: GameUpdate = { status };
+
+  if (status === 'playing') {
+    updatePayload.started_at = new Date().toISOString();
+  } else if (status === 'backlog') {
+    updatePayload.started_at = null;
+  } else if (status === 'finished') {
+    updatePayload.finished_at = finishedAt ?? new Date().toISOString();
+    updatePayload.notes = notes ?? null;
+    updatePayload.rating = rating ?? null;
+  } else if (status === 'dropped') {
+    updatePayload.dropped_at = droppedAt ?? new Date().toISOString();
+    updatePayload.notes = notes ?? null;
+    updatePayload.rating = rating ?? null;
+  }
+
   // Update the game status
   const { error } = await supabase
     .from('games')
-    .update({ status })
+    .update(updatePayload)
     .eq('user_id', user.id)
     .eq('app_id', appId);
 

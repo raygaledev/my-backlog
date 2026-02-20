@@ -2,12 +2,23 @@
 
 import { memo } from 'react';
 import Image from 'next/image';
-import { Clock, Gamepad2, Star, Undo2, Check, X, EyeOff, ExternalLink } from 'lucide-react';
+import {
+  Clock,
+  Gamepad2,
+  Star,
+  Undo2,
+  Check,
+  X,
+  EyeOff,
+  ExternalLink,
+  FileText,
+} from 'lucide-react';
 import type { GameItem } from '@/hooks/useGamesPage';
 
 interface GameCardProps {
   game: GameItem;
   onStatusChange: (appId: number, status: string) => void;
+  onEditNotes?: (appId: number) => void;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -59,21 +70,48 @@ function BacklogActions({ game, onStatusChange }: GameCardProps) {
   );
 }
 
-function RestoreAction({ game, onStatusChange }: GameCardProps) {
-  const label = game.status === 'hidden' ? 'Unhide' : 'Move to Backlog';
+function CompletedActions({ game, onStatusChange, onEditNotes }: GameCardProps) {
+  if (game.status === 'hidden') {
+    return (
+      <button
+        onClick={() => onStatusChange(game.app_id, 'backlog')}
+        className="cursor-pointer absolute inset-0 bg-black/60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+      >
+        <Undo2 className="w-4 h-4 text-white" />
+        <span className="text-white font-medium text-sm">Unhide</span>
+      </button>
+    );
+  }
 
   return (
-    <button
-      onClick={() => onStatusChange(game.app_id, 'backlog')}
-      className="cursor-pointer absolute inset-0 bg-black/60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
-    >
-      <Undo2 className="w-4 h-4 text-white" />
-      <span className="text-white font-medium text-sm">{label}</span>
-    </button>
+    <div className="absolute inset-0 bg-black/60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 sm:gap-2">
+      {onEditNotes && (
+        <button
+          onClick={() => onEditNotes(game.app_id)}
+          className="cursor-pointer flex items-center gap-1.5 sm:gap-1 px-4 sm:px-2 py-2.5 sm:py-1.5 bg-zinc-700/80 hover:bg-zinc-700 rounded-lg sm:rounded transition-colors"
+          title="View/edit notes"
+        >
+          <FileText className="w-5 sm:w-3.5 h-5 sm:h-3.5 text-zinc-300" />
+          <span className="text-zinc-300 text-sm sm:text-xs font-medium">Notes</span>
+        </button>
+      )}
+      <button
+        onClick={() => onStatusChange(game.app_id, 'backlog')}
+        className="cursor-pointer flex items-center gap-1.5 sm:gap-1 px-4 sm:px-2 py-2.5 sm:py-1.5 bg-zinc-600/80 hover:bg-zinc-600 rounded-lg sm:rounded transition-colors"
+        title="Move to backlog"
+      >
+        <Undo2 className="w-5 sm:w-3.5 h-5 sm:h-3.5 text-white" />
+        <span className="text-white text-sm sm:text-xs font-medium">Move to Backlog</span>
+      </button>
+    </div>
   );
 }
 
-export const GameCard = memo(function GameCard({ game, onStatusChange }: GameCardProps) {
+export const GameCard = memo(function GameCard({
+  game,
+  onStatusChange,
+  onEditNotes,
+}: GameCardProps) {
   const isBacklog = !game.status || game.status === 'backlog';
   const hasCompletedStatus =
     game.status === 'finished' || game.status === 'dropped' || game.status === 'hidden';
@@ -97,7 +135,9 @@ export const GameCard = memo(function GameCard({ game, onStatusChange }: GameCar
 
         {game.status && <StatusBadge status={game.status} />}
 
-        {hasCompletedStatus && <RestoreAction game={game} onStatusChange={onStatusChange} />}
+        {hasCompletedStatus && (
+          <CompletedActions game={game} onStatusChange={onStatusChange} onEditNotes={onEditNotes} />
+        )}
 
         {isBacklog && <BacklogActions game={game} onStatusChange={onStatusChange} />}
       </div>

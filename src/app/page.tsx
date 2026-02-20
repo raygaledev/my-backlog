@@ -10,6 +10,7 @@ import { CurrentlyPlaying } from '@/components/CurrentlyPlaying';
 import { SyncProgress } from '@/components/SyncProgress';
 import { LandingPage } from '@/components/LandingPage';
 import { SuggestionModal } from '@/components/suggest';
+import { GameStatusModal } from '@/components/games/GameStatusModal';
 import { useGameLibrary } from '@/hooks/useGameLibrary';
 import { RefreshCw, Dices } from 'lucide-react';
 
@@ -121,6 +122,9 @@ function HomeContent() {
     handleRefreshLibrary,
     handleRandomPick,
     handleConnectSteam,
+    statusModal,
+    handleConfirmStatusChange,
+    handleCloseStatusModal,
   } = useGameLibrary();
 
   useEffect(() => {
@@ -274,6 +278,16 @@ function HomeContent() {
         onClose={() => setIsSuggestionModalOpen(false)}
         onPick={handleSuggestionPick}
       />
+
+      {statusModal && currentlyPlaying && (
+        <GameStatusModal
+          isOpen={true}
+          onClose={handleCloseStatusModal}
+          onConfirm={handleConfirmStatusChange}
+          action={statusModal.action}
+          gameName={currentlyPlaying.name}
+        />
+      )}
     </div>
   );
 }

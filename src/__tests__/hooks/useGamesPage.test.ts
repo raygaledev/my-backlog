@@ -53,6 +53,10 @@ describe('useGamesPage filtering logic', () => {
     header_image: 'https://example.com/image.jpg',
     main_story_hours: 10,
     status: 'backlog',
+    notes: null,
+    rating: null,
+    finished_at: null,
+    dropped_at: null,
     ...overrides,
   });
 

@@ -6,6 +6,10 @@ import { celebrateGameFinished } from '@/lib/confetti';
 import type { User } from '@supabase/supabase-js';
 import type { Profile, Game, GameWithImage, SyncProgress } from '@/types/games';
 
+interface StatusModal {
+  action: 'finished' | 'dropped';
+}
+
 interface UseGameLibraryReturn {
   // Auth state
   user: User | null;
@@ -29,16 +33,19 @@ interface UseGameLibraryReturn {
   isRefreshing: boolean;
   isStatusLoading: boolean;
   celebrationMessage: string | null;
+  statusModal: StatusModal | null;
 
   // Actions
   handlePickGame: (game: GameWithImage) => Promise<void>;
-  handleFinishGame: () => Promise<void>;
-  handleDropGame: () => Promise<void>;
+  handleFinishGame: () => void;
+  handleDropGame: () => void;
   handleHideGame: (game: GameWithImage) => Promise<void>;
   handleCancelGame: () => Promise<void>;
   handleRefreshLibrary: () => Promise<void>;
   handleRandomPick: () => Promise<void>;
   handleConnectSteam: () => void;
+  handleConfirmStatusChange: (date: string, notes: string, rating: number | null) => Promise<void>;
+  handleCloseStatusModal: () => void;
 }
 
 export function useGameLibrary(): UseGameLibraryReturn {
@@ -57,6 +64,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
   const [currentlyPlaying, setCurrentlyPlaying] = useState<GameWithImage | null>(null);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState<string | null>(null);
+  const [statusModal, setStatusModal] = useState<StatusModal | null>(null);
   const syncingRef = useRef(false);
 
   // Display only first 10 games from each pool
@@ -116,7 +124,11 @@ export function useGameLibrary(): UseGameLibraryReturn {
       await fetch('/api/games/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appId: game.app_id, status: 'playing' }),
+        body: JSON.stringify({
+          appId: game.app_id,
+          status: 'playing',
+          started_at: new Date().toISOString(),
+        }),
       });
       setCurrentlyPlaying(game);
       setShortGamesPool((prev) => prev.filter((g) => g.app_id !== game.app_id));
@@ -128,46 +140,14 @@ export function useGameLibrary(): UseGameLibraryReturn {
     setIsStatusLoading(false);
   }, []);
 
-  const handleFinishGame = useCallback(async () => {
+  const handleFinishGame = useCallback(() => {
     if (!currentlyPlaying) return;
-    const finishedGameName = currentlyPlaying.name;
-    setIsStatusLoading(true);
-    try {
-      await fetch('/api/games/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          appId: currentlyPlaying.app_id,
-          status: 'finished',
-        }),
-      });
-      setCurrentlyPlaying(null);
-      celebrateGameFinished();
-      setCelebrationMessage(finishedGameName);
-      setTimeout(() => setCelebrationMessage(null), 3000);
-    } catch (err) {
-      console.error('Failed to finish game:', err);
-    }
-    setIsStatusLoading(false);
+    setStatusModal({ action: 'finished' });
   }, [currentlyPlaying]);
 
-  const handleDropGame = useCallback(async () => {
+  const handleDropGame = useCallback(() => {
     if (!currentlyPlaying) return;
-    setIsStatusLoading(true);
-    try {
-      await fetch('/api/games/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          appId: currentlyPlaying.app_id,
-          status: 'dropped',
-        }),
-      });
-      setCurrentlyPlaying(null);
-    } catch (err) {
-      console.error('Failed to drop game:', err);
-    }
-    setIsStatusLoading(false);
+    setStatusModal({ action: 'dropped' });
   }, [currentlyPlaying]);
 
   const handleHideGame = useCallback(async (game: GameWithImage) => {
@@ -184,6 +164,41 @@ export function useGameLibrary(): UseGameLibraryReturn {
       console.error('Failed to hide game:', err);
     }
   }, []);
+
+  const handleConfirmStatusChange = useCallback(
+    async (date: string, notes: string, rating: number | null) => {
+      if (!currentlyPlaying || !statusModal) return;
+      const { action } = statusModal;
+      const finishedGameName = currentlyPlaying.name;
+      setStatusModal(null);
+      setIsStatusLoading(true);
+      try {
+        await fetch('/api/games/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appId: currentlyPlaying.app_id,
+            status: action,
+            ...(action === 'finished' ? { finishedAt: date } : { droppedAt: date }),
+            notes,
+            rating,
+          }),
+        });
+        setCurrentlyPlaying(null);
+        if (action === 'finished') {
+          celebrateGameFinished();
+          setCelebrationMessage(finishedGameName);
+          setTimeout(() => setCelebrationMessage(null), 3000);
+        }
+      } catch (err) {
+        console.error(`Failed to ${action} game:`, err);
+      }
+      setIsStatusLoading(false);
+    },
+    [currentlyPlaying, statusModal],
+  );
+
+  const handleCloseStatusModal = useCallback(() => setStatusModal(null), []);
 
   const handleCancelGame = useCallback(async () => {
     if (!currentlyPlaying) return;
@@ -402,6 +417,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
     isRefreshing,
     isStatusLoading,
     celebrationMessage,
+    statusModal,
     handlePickGame,
     handleFinishGame,
     handleDropGame,
@@ -410,5 +426,7 @@ export function useGameLibrary(): UseGameLibraryReturn {
     handleRefreshLibrary,
     handleRandomPick,
     handleConnectSteam,
+    handleConfirmStatusChange,
+    handleCloseStatusModal,
   };
 }

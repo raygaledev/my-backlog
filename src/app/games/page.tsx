@@ -3,6 +3,7 @@
 import { Gamepad2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/games/GameCard';
+import { GameStatusModal } from '@/components/games/GameStatusModal';
 import { GamesFilter } from '@/components/games/GamesFilter';
 import { GamesSearch } from '@/components/games/GamesSearch';
 import { GamesSort } from '@/components/games/GamesSort';
@@ -46,6 +47,10 @@ export default function GamesPage() {
     handleStatusChange,
     searchQuery,
     setSearchQuery,
+    statusModal,
+    handleConfirmFinishDrop,
+    handleCloseStatusModal,
+    handleEditNotes,
   } = useGamesPage();
 
   if (loading) {
@@ -88,12 +93,30 @@ export default function GamesPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredGames.map((game) => (
-                <GameCard key={game.app_id} game={game} onStatusChange={handleStatusChange} />
+                <GameCard
+                  key={game.app_id}
+                  game={game}
+                  onStatusChange={handleStatusChange}
+                  onEditNotes={handleEditNotes}
+                />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {statusModal && (
+        <GameStatusModal
+          isOpen={true}
+          onClose={handleCloseStatusModal}
+          onConfirm={handleConfirmFinishDrop}
+          action={statusModal.action}
+          gameName={statusModal.gameName}
+          initialDate={statusModal.initialDate ?? undefined}
+          initialNotes={statusModal.initialNotes ?? undefined}
+          initialRating={statusModal.initialRating}
+        />
+      )}
     </div>
   );
 }
